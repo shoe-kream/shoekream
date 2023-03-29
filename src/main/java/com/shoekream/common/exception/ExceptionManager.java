@@ -2,6 +2,7 @@ package com.shoekream.common.exception;
 
 import com.shoekream.common.Response;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -17,4 +18,11 @@ public class ExceptionManager {
                 .body(Response.error(e.getErrorCode()));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> builderExceptionHandler(IllegalArgumentException e) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Response.error(e.getMessage()));
+
+    }
 }
