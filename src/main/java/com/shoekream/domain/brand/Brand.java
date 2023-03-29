@@ -1,7 +1,7 @@
 package com.shoekream.domain.brand;
 
 import com.shoekream.domain.BaseTimeEntity;
-import com.shoekream.domain.brand.dto.BrandCreateResponse;
+import com.shoekream.domain.brand.dto.BrandInfo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,8 +23,8 @@ public class Brand extends BaseTimeEntity {
 
     private String thumbnailImagePath;
 
-    public BrandCreateResponse toBrandInfo() {
-        return BrandCreateResponse.builder()
+    public BrandInfo toBrandInfo() {
+        return BrandInfo.builder()
                 .id(this.id)
                 .name(this.name)
                 .originImagePath(this.originImagePath)

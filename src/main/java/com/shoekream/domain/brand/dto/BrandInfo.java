@@ -1,10 +1,6 @@
 package com.shoekream.domain.brand.dto;
 
 
-import com.shoekream.domain.brand.Brand;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BrandCreateResponse {
+public class BrandInfo {
 
     private Long id;
     private String name;
