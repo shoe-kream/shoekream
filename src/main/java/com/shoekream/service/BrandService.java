@@ -1,15 +1,16 @@
 package com.shoekream.service;
 
-import com.shoekream.common.Response;
 import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
+import com.shoekream.domain.brand.Brand;
 import com.shoekream.domain.brand.BrandRepository;
 import com.shoekream.domain.brand.dto.BrandCreateResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,5 +24,11 @@ public class BrandService {
         return brandRepository.findById(id)
                 .orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND))
                 .toBrandInfo();
+    }
+
+    public List<BrandCreateResponse> getBrandInfos() {
+        return brandRepository.findAll().stream()
+                .map(Brand::toBrandInfo)
+                .toList();
     }
 }

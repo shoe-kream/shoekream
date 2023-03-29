@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/brands/")
 @RequiredArgsConstructor
@@ -23,4 +25,10 @@ public class BrandApiController {
     public ResponseEntity<Response<BrandCreateResponse>> getBrandInfo(@PathVariable Long id) {
         return ResponseEntity.ok().body(Response.success(brandService.getBrandInfo(id)));
     }
+
+    @GetMapping()
+    public ResponseEntity<Response<List<BrandCreateResponse>>> getBrandInfos() {
+        return ResponseEntity.ok().body(Response.success(brandService.getBrandInfos()));
+    }
+
 }
