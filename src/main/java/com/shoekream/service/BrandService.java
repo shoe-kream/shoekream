@@ -6,6 +6,7 @@ import com.shoekream.domain.brand.Brand;
 import com.shoekream.domain.brand.BrandRepository;
 import com.shoekream.domain.brand.dto.BrandCreateRequest;
 import com.shoekream.domain.brand.dto.BrandCreateResponse;
+import com.shoekream.domain.brand.dto.BrandDeleteResponse;
 import com.shoekream.domain.brand.dto.BrandInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,5 +48,14 @@ public class BrandService {
         if(brandRepository.existsByName(requestDto.getName())) {
             throw new ShoeKreamException(ErrorCode.DUPLICATED_BRAND);
         }
+    }
+
+    public BrandDeleteResponse deleteBrand(Long id) {
+
+        Brand brand = brandRepository.findById(id).orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
+
+        brandRepository.deleteById(id);
+
+        return brand.toBrandDeleteResponse();
     }
 }
