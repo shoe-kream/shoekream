@@ -4,6 +4,8 @@ import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.domain.brand.Brand;
 import com.shoekream.domain.brand.BrandRepository;
+import com.shoekream.domain.brand.dto.BrandCreateRequest;
+import com.shoekream.domain.brand.dto.BrandCreateResponse;
 import com.shoekream.domain.brand.dto.BrandInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,5 +32,20 @@ public class BrandService {
         return brandRepository.findAll().stream()
                 .map(Brand::toBrandInfo)
                 .toList();
+    }
+
+    public BrandCreateResponse saveBrand(BrandCreateRequest requestDto) {
+
+        checkDuplicatedBrandName(requestDto);
+
+        Brand savedBrand = brandRepository.save(requestDto.toEntity());
+
+        return savedBrand.toBrandCreateResponse();
+    }
+
+    private void checkDuplicatedBrandName(BrandCreateRequest requestDto) {
+        if(brandRepository.existsByName(requestDto.getName())) {
+            throw new ShoeKreamException(ErrorCode.DUPLICATED_BRAND);
+        }
     }
 }
