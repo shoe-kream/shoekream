@@ -41,6 +41,7 @@ public class BrandService {
         return savedBrand.toBrandCreateResponse();
     }
 
+    // 브랜드 명 중복 확인
     private void checkDuplicatedBrandName(BrandCreateRequest requestDto) {
         if(brandRepository.existsByName(requestDto.getName())) {
             throw new ShoeKreamException(ErrorCode.DUPLICATED_BRAND);
@@ -67,6 +68,7 @@ public class BrandService {
         return savedBrand.toBrandUpdateResponse();
     }
 
+    // 브랜드 수정 시 중복 확인 - 기존 브랜드 명 != 수정할 브랜드 명 일 경우 수정할 브랜드 명이 없어야 함
     private void checkDuplicatedUpdateBrandName(Brand savedBrand, BrandUpdateRequest updatedBrand) {
         if (!savedBrand.getName().equals(updatedBrand.getName()) && isExistBrand(updatedBrand) ) {
             throw new ShoeKreamException(ErrorCode.DUPLICATED_BRAND);
