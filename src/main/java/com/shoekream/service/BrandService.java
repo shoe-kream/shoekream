@@ -4,10 +4,7 @@ import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.domain.brand.Brand;
 import com.shoekream.domain.brand.BrandRepository;
-import com.shoekream.domain.brand.dto.BrandCreateRequest;
-import com.shoekream.domain.brand.dto.BrandCreateResponse;
-import com.shoekream.domain.brand.dto.BrandDeleteResponse;
-import com.shoekream.domain.brand.dto.BrandInfo;
+import com.shoekream.domain.brand.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -58,4 +55,28 @@ public class BrandService {
 
         return brand.toBrandDeleteResponse();
     }
+
+    public BrandUpdateResponse updateBrand(Long id, BrandUpdateRequest updatedBrand) {
+
+        Brand savedBrand = brandRepository.findById(id).orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
+
+        checkDuplicatedUpdateBrandName(savedBrand,updatedBrand);
+
+        savedBrand.update(updatedBrand);
+
+        return savedBrand.toBrandUpdateResponse();
+    }
+
+    private void checkDuplicatedUpdateBrandName(Brand savedBrand, BrandUpdateRequest updatedBrand) {
+        if (!savedBrand.getName().equals(updatedBrand.getName()) && isExistBrand(updatedBrand) ) {
+            throw new ShoeKreamException(ErrorCode.DUPLICATED_BRAND);
+        }
+    }
+    private boolean isExistBrand(BrandUpdateRequest updatedBrand) {
+        if (!brandRepository.existsByName(updatedBrand.getName())) {
+            return false;
+        }
+        return true;
+    }
+
 }

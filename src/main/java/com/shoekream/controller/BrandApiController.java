@@ -1,10 +1,7 @@
 package com.shoekream.controller;
 
 import com.shoekream.common.Response;
-import com.shoekream.domain.brand.dto.BrandCreateRequest;
-import com.shoekream.domain.brand.dto.BrandCreateResponse;
-import com.shoekream.domain.brand.dto.BrandDeleteResponse;
-import com.shoekream.domain.brand.dto.BrandInfo;
+import com.shoekream.domain.brand.dto.*;
 import com.shoekream.service.BrandService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,4 +39,12 @@ public class BrandApiController {
     public ResponseEntity<Response<BrandDeleteResponse>> deleteBrand(@PathVariable Long id) {
         return ResponseEntity.ok().body(Response.success(brandService.deleteBrand(id)));
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Response<BrandUpdateResponse>> updateBrand(@PathVariable Long id, @Valid @RequestBody BrandUpdateRequest requestDto) {
+        return ResponseEntity.ok().body(Response.success(brandService.updateBrand(id, requestDto)));
+    }
+
+
+
 }
