@@ -2,10 +2,7 @@ package com.shoekream.domain.user.dto;
 
 import com.shoekream.domain.user.User;
 import com.shoekream.domain.user.UserRole;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
@@ -14,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Getter
 @Builder
+@EqualsAndHashCode
 public class UserCreateRequest {
     private String email;
     private String password;
