@@ -7,7 +7,7 @@ import com.shoekream.domain.cart.CartRepository;
 import com.shoekream.domain.user.User;
 import com.shoekream.domain.user.UserRepository;
 import com.shoekream.domain.user.dto.UserCreateRequest;
-import org.assertj.core.api.Assertions;
+import com.shoekream.domain.user.dto.UserLoginRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,6 +17,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -79,7 +82,7 @@ class UserServiceTest {
 
             ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> userService.createUser(request));
 
-            Assertions.assertThat(shoeKreamException.getErrorCode()).isEqualTo(ErrorCode.DUPLICATE_EMAIL);
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(ErrorCode.DUPLICATE_EMAIL);
 
             verify(userRepository,atLeastOnce()).existsByEmail(request.getEmail());
 
@@ -96,10 +99,59 @@ class UserServiceTest {
 
             ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> userService.createUser(request));
 
-            Assertions.assertThat(shoeKreamException.getErrorCode()).isEqualTo(ErrorCode.DUPLICATE_NICKNAME);
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(ErrorCode.DUPLICATE_NICKNAME);
 
             verify(userRepository,atLeastOnce()).existsByEmail(request.getEmail());
             verify(userRepository,atLeastOnce()).existsByNickname(request.getNickname());
+
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 로그인 테스트")
+    class UserLogin{
+        UserLoginRequest request = new UserLoginRequest("email", "password");
+
+        @Test
+        @DisplayName("회원 로그인 성공 테스트")
+        public void success(){
+            given(userRepository.findByEmail(request.getEmail()))
+                    .willReturn(Optional.of(mockUser));
+
+            assertDoesNotThrow(() -> userService.loginUser(request));
+
+            verify(userRepository, atLeastOnce()).findByEmail(request.getEmail());
+        }
+
+        @Test
+        @DisplayName("회원 로그인 실패 테스트 (가입되지 않은 회원인 경우)")
+        public void error1(){
+            when(userRepository.findByEmail(request.getEmail()))
+                    .thenReturn(Optional.empty());
+
+            ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> userService.loginUser(request));
+
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
+
+            verify(userRepository, atLeastOnce()).findByEmail(request.getEmail());
+
+        }
+
+        @Test
+        @DisplayName("회원 로그인 실패 테스트 (비밀번호가 일치하지 않는 경우)")
+        public void error2(){
+            given(userRepository.findByEmail(request.getEmail()))
+                    .willReturn(Optional.of(mockUser));
+
+            doThrow(new ShoeKreamException(ErrorCode.WRONG_PASSWORD))
+                    .when(mockUser).checkPassword(encoder, request.getPassword());
+
+
+            ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> userService.loginUser(request));
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(ErrorCode.WRONG_PASSWORD);
+
+            verify(userRepository, atLeastOnce()).findByEmail(request.getEmail());
+            verify(mockUser, atLeastOnce()).checkPassword(encoder,request.getPassword());
 
         }
     }
