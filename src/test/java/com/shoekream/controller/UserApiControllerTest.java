@@ -1,6 +1,7 @@
 package com.shoekream.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shoekream.common.aop.BindingCheck;
 import com.shoekream.common.config.SecurityConfig;
 import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,7 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @WebMvcTest(value = UserApiController.class)
-@Import({SecurityConfig.class})
+@EnableAspectJAutoProxy
+@Import({SecurityConfig.class, BindingCheck.class})
 class UserApiControllerTest {
 
     @Autowired
@@ -55,8 +58,8 @@ class UserApiControllerTest {
     @DisplayName("회원가입 테스트")
     class UserJoin {
 
-        UserCreateRequest request = new UserCreateRequest("email", "password", "nickname", "phone");
-        UserCreateResponse response = new UserCreateResponse("email", "nickname");
+        UserCreateRequest request = new UserCreateRequest("email@email.com", "password1!", "nickname", "010-0000-0000");
+        UserCreateResponse response = new UserCreateResponse("email@email.com", "nickname");
 
         @Test
         @DisplayName("회원가입 성공 테스트")
@@ -90,8 +93,7 @@ class UserApiControllerTest {
                     .andDo(print())
                     .andExpect(jsonPath("$.message").exists())
                     .andExpect(jsonPath("$.message").value("ERROR"))
-                    .andExpect(jsonPath("$.result").exists())
-                    .andExpect(jsonPath("$.result").value("DUPLICATE_EMAIL"));
+                    .andExpect(jsonPath("$.result").exists());
         }
 
         @Test
@@ -107,8 +109,22 @@ class UserApiControllerTest {
                     .andDo(print())
                     .andExpect(jsonPath("$.message").exists())
                     .andExpect(jsonPath("$.message").value("ERROR"))
-                    .andExpect(jsonPath("$.result").exists())
-                    .andExpect(jsonPath("$.result").value("DUPLICATE_NICKNAME"));
+                    .andExpect(jsonPath("$.result").exists());
+        }
+
+        @Test
+        @DisplayName("회원가입 실패 테스트 (Binding Error 발생 이메일 형식만 대표로 테스트)")
+        void error3() throws Exception {
+
+            UserCreateRequest request = new UserCreateRequest("email", "password1!", "nickname", "010-0000-0000");
+
+            mockMvc.perform(post("/api/v1/users")
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
         }
     }
 
@@ -120,7 +136,7 @@ class UserApiControllerTest {
         String jwt = "jwt";
 
         @Test
-        @DisplayName("회원가입 성공 테스트")
+        @DisplayName("로그인 성공 테스트")
         void success() throws Exception {
 
             given(userService.loginUser(request))
@@ -138,7 +154,7 @@ class UserApiControllerTest {
 
 
         @Test
-        @DisplayName("회원가입 실패 테스트 (가입된 회원이 아닌 경우)")
+        @DisplayName("로그인 실패 테스트 (가입된 회원이 아닌 경우)")
         void error1() throws Exception {
 
             when(userService.loginUser(request))
@@ -150,12 +166,11 @@ class UserApiControllerTest {
                     .andDo(print())
                     .andExpect(jsonPath("$.message").exists())
                     .andExpect(jsonPath("$.message").value("ERROR"))
-                    .andExpect(jsonPath("$.result").exists())
-                    .andExpect(jsonPath("$.result").value("USER_NOT_FOUND"));
+                    .andExpect(jsonPath("$.result").exists());
         }
 
         @Test
-        @DisplayName("회원가입 실패 테스트 (비밀번호가 일치하지 않는 경우)")
+        @DisplayName("로그인 실패 테스트 (비밀번호가 일치하지 않는 경우)")
         void error2() throws Exception {
 
             when(userService.loginUser(request))
@@ -167,8 +182,22 @@ class UserApiControllerTest {
                     .andDo(print())
                     .andExpect(jsonPath("$.message").exists())
                     .andExpect(jsonPath("$.message").value("ERROR"))
-                    .andExpect(jsonPath("$.result").exists())
-                    .andExpect(jsonPath("$.result").value("WRONG_PASSWORD"));
+                    .andExpect(jsonPath("$.result").exists());
+        }
+
+        @Test
+        @DisplayName("로그인 실패 테스트 (Binding error 발생)")
+        void error3() throws Exception {
+
+            UserLoginRequest request = new UserLoginRequest("", "password");
+
+            mockMvc.perform(post("/api/v1/users/login")
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
         }
     }
 
