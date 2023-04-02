@@ -5,6 +5,7 @@ import com.shoekream.domain.brand.Brand;
 import com.shoekream.domain.product.common.Currency;
 import com.shoekream.domain.product.common.SizeClassification;
 import com.shoekream.domain.product.common.SizeUnit;
+import com.shoekream.domain.product.dto.ProductCreateResponse;
 import com.shoekream.domain.trade.Trade;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -65,4 +66,13 @@ public class Product extends BaseTimeEntity {
     @OneToMany(mappedBy = "product", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Trade> trades = new ArrayList<>();
 
+    public ProductCreateResponse toProductCreateResponse() {
+        return ProductCreateResponse.builder()
+                .name(this.name)
+                .modelNumber(this.modelNumber)
+                .minSize(this.minSize)
+                .maxSize(this.maxSize)
+                .brandName(this.brand.getName())
+                .build();
+    }
 }
