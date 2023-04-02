@@ -6,6 +6,7 @@ import com.shoekream.domain.product.common.Currency;
 import com.shoekream.domain.product.common.SizeClassification;
 import com.shoekream.domain.product.common.SizeUnit;
 import com.shoekream.domain.product.dto.ProductCreateResponse;
+import com.shoekream.domain.product.dto.ProductInfo;
 import com.shoekream.domain.trade.Trade;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -73,6 +74,27 @@ public class Product extends BaseTimeEntity {
                 .minSize(this.minSize)
                 .maxSize(this.maxSize)
                 .brandName(this.brand.getName())
+                .build();
+    }
+
+    public ProductInfo toProductInfo() {
+        return ProductInfo.builder()
+                .id(this.id)
+                .name(this.name)
+                .modelNumber(this.modelNumber)
+                .color(this.color)
+                .releaseDate(this.releaseDate)
+                .releasePrice(this.releasePrice)
+                .currency(this.currency)
+                .sizeClassification(this.sizeClassification)
+                .sizeUnit(this.sizeUnit)
+                .minSize(this.minSize)
+                .maxSize(this.maxSize)
+                .sizeGap(this.sizeGap)
+                .brandInfo(this.brand.toBrandInfo())
+                .originImagePath(this.originImagePath)
+                .thumbnailImagePath(this.thumbnailImagePath)
+                .resizedImagePath(this.resizedImagePath)
                 .build();
     }
 }

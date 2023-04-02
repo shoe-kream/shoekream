@@ -6,6 +6,7 @@ import com.shoekream.domain.product.Product;
 import com.shoekream.domain.product.ProductRepository;
 import com.shoekream.domain.product.dto.ProductCreateRequest;
 import com.shoekream.domain.product.dto.ProductCreateResponse;
+import com.shoekream.domain.product.dto.ProductInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,5 +29,12 @@ public class ProductService {
         Product savedProduct = productRepository.save(requestDto.toEntity());
 
         return savedProduct.toProductCreateResponse();
+    }
+
+    @Transactional(readOnly = true)
+    public ProductInfo getProductInfo(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.PRODUCT_NOT_FOUND))
+                .toProductInfo();
     }
 }

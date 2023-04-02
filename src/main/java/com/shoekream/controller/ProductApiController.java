@@ -3,6 +3,7 @@ package com.shoekream.controller;
 import com.shoekream.common.Response;
 import com.shoekream.domain.product.dto.ProductCreateRequest;
 import com.shoekream.domain.product.dto.ProductCreateResponse;
+import com.shoekream.domain.product.dto.ProductInfo;
 import com.shoekream.service.BrandService;
 import com.shoekream.service.ProductService;
 import jakarta.validation.Valid;
@@ -10,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -30,5 +28,11 @@ public class ProductApiController {
         brandService.checkProductBrandExists(requestDto.getBrandInfo());
         return ResponseEntity.status(HttpStatus.CREATED).body(Response.success(productService.saveProduct(requestDto)));
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Response<ProductInfo>> getProductInfo(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(Response.success(productService.getProductInfo(id)));
+    }
+
 
 }
