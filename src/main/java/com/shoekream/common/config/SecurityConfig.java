@@ -32,7 +32,6 @@ public class SecurityConfig {
 
                 .and()
                 .authorizeHttpRequests()
-                .requestMatchers(HttpMethod.GET,"/api/v1/users/test").authenticated()
                 .anyRequest().permitAll()
 
                 .and()
