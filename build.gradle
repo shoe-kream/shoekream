@@ -28,6 +28,15 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// jaxb-api 라이브러리 : 자바 17에는 이 라이브러리를 추가해주어야 jwt 토큰 생성 시 에러가 발생하지 않음
+	implementation 'io.jsonwebtoken:jjwt:0.9.1'
+	implementation 'javax.xml.bind:jaxb-api:2.3.0'
+
+	// aop 사용
+	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: '3.0.5'
+	testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: '3.0.5'
+
 }
 
 tasks.named('test') {

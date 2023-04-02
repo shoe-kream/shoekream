@@ -1,15 +1,21 @@
 package com.shoekream.domain.user;
 
+import com.shoekream.common.exception.ErrorCode;
+import com.shoekream.common.exception.ShoeKreamException;
+import com.shoekream.common.util.JwtUtil;
 import com.shoekream.domain.cart.Cart;
 import com.shoekream.domain.point.Point;
 import com.shoekream.domain.user.dto.UserCreateResponse;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.shoekream.common.util.constants.JwtConstants.*;
 
 @Getter
 @AllArgsConstructor
@@ -62,5 +68,15 @@ public class User extends UserBase {
 
     public void createCart(Cart cart) {
         this.cart = cart;
+    }
+
+    public void checkPassword(BCryptPasswordEncoder encoder, String inputPassword) {
+        if (!encoder.matches(inputPassword, this.password)) {
+            throw new ShoeKreamException(ErrorCode.WRONG_PASSWORD);
+        }
+    }
+
+    public String createToken(String secretKey) {
+        return JwtUtil.createToken(this.email, this.userRole.toString(), secretKey, TOKEN_VALID_MILLIS);
     }
 }

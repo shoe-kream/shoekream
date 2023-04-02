@@ -9,7 +9,9 @@ import com.shoekream.domain.user.User;
 import com.shoekream.domain.user.UserRepository;
 import com.shoekream.domain.user.dto.UserCreateRequest;
 import com.shoekream.domain.user.dto.UserCreateResponse;
+import com.shoekream.domain.user.dto.UserLoginRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserService {
+
+    @Value("${jwt.secret}")
+    private String secretKey;
 
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
@@ -47,5 +52,15 @@ public class UserService {
 
     private boolean isExistsByEmail(UserCreateRequest request) {
         return userRepository.existsByEmail(request.getEmail());
+    }
+
+    public String loginUser(UserLoginRequest request) {
+
+        User foundUser = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.USER_NOT_FOUND));
+
+        foundUser.checkPassword(encoder,request.getPassword());
+
+        return foundUser.createToken(secretKey);
     }
 }
