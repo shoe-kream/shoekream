@@ -3,6 +3,7 @@ package com.shoekream.controller;
 import com.shoekream.common.Response;
 import com.shoekream.domain.product.dto.ProductCreateRequest;
 import com.shoekream.domain.product.dto.ProductCreateResponse;
+import com.shoekream.domain.product.dto.ProductDeleteResponse;
 import com.shoekream.domain.product.dto.ProductInfo;
 import com.shoekream.service.BrandService;
 import com.shoekream.service.ProductService;
@@ -34,5 +35,9 @@ public class ProductApiController {
         return ResponseEntity.status(HttpStatus.OK).body(Response.success(productService.getProductInfo(id)));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Response<ProductDeleteResponse>> deleteProduct(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(Response.success(productService.deleteProduct(id)));
+    }
 
 }

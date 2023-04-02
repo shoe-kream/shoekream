@@ -6,6 +6,7 @@ import com.shoekream.domain.product.Product;
 import com.shoekream.domain.product.ProductRepository;
 import com.shoekream.domain.product.dto.ProductCreateRequest;
 import com.shoekream.domain.product.dto.ProductCreateResponse;
+import com.shoekream.domain.product.dto.ProductDeleteResponse;
 import com.shoekream.domain.product.dto.ProductInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,8 +34,19 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductInfo getProductInfo(Long id) {
+
         return productRepository.findById(id)
                 .orElseThrow(() -> new ShoeKreamException(ErrorCode.PRODUCT_NOT_FOUND))
                 .toProductInfo();
+    }
+
+    public ProductDeleteResponse deleteProduct(Long id) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        productRepository.delete(product);
+
+        return product.toProductDeleteResponse();
     }
 }
