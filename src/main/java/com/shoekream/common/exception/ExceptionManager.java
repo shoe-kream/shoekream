@@ -15,7 +15,7 @@ public class ExceptionManager {
     @ExceptionHandler(ShoeKreamException.class)
     public ResponseEntity<?> appExceptionHandler(ShoeKreamException e) {
         return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                .body(Response.error(e.getErrorCode()));
+                .body(Response.error(e.getErrorCode().getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -24,5 +24,11 @@ public class ExceptionManager {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Response.error(e.getMessage()));
 
+    }
+
+    @ExceptionHandler(BindingException.class)
+    public ResponseEntity<?> bindingExceptionHandler(BindingException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Response.error(e.getMessage()));
     }
 }
