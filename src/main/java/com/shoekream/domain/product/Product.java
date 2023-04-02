@@ -5,9 +5,7 @@ import com.shoekream.domain.brand.Brand;
 import com.shoekream.domain.product.common.Currency;
 import com.shoekream.domain.product.common.SizeClassification;
 import com.shoekream.domain.product.common.SizeUnit;
-import com.shoekream.domain.product.dto.ProductCreateResponse;
-import com.shoekream.domain.product.dto.ProductDeleteResponse;
-import com.shoekream.domain.product.dto.ProductInfo;
+import com.shoekream.domain.product.dto.*;
 import com.shoekream.domain.trade.Trade;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -103,6 +101,34 @@ public class Product extends BaseTimeEntity {
         return ProductDeleteResponse.builder()
                 .name(this.name)
                 .modelNumber(this.modelNumber)
+                .brandName(this.brand.getName())
+                .build();
+    }
+
+    public void update(ProductUpdateRequest updatedProduct) {
+        this.name = updatedProduct.getName();
+        this.modelNumber = updatedProduct.getModelNumber();
+        this.color = updatedProduct.getColor();
+        this.releaseDate = updatedProduct.getReleaseDate();
+        this.releasePrice = updatedProduct.getReleasePrice();
+        this.currency = updatedProduct.getCurrency();
+        this.sizeClassification = updatedProduct.getSizeClassification();
+        this.sizeUnit = updatedProduct.getSizeUnit();
+        this.minSize = updatedProduct.getMinSize();
+        this.maxSize = updatedProduct.getMaxSize();
+        this.sizeGap = updatedProduct.getSizeGap();
+        this.brand = updatedProduct.getBrandInfo().toEntity();
+        this.originImagePath = updatedProduct.getOriginImagePath();
+        this.thumbnailImagePath = updatedProduct.getThumbnailImagePath();
+        this.resizedImagePath = updatedProduct.getResizedImagePath();
+    }
+
+    public ProductUpdateResponse toProductUpdateResponse() {
+        return ProductUpdateResponse.builder()
+                .name(this.name)
+                .modelNumber(this.modelNumber)
+                .minSize(this.minSize)
+                .maxSize(this.maxSize)
                 .brandName(this.brand.getName())
                 .build();
     }

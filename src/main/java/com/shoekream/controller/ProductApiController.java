@@ -1,10 +1,7 @@
 package com.shoekream.controller;
 
 import com.shoekream.common.Response;
-import com.shoekream.domain.product.dto.ProductCreateRequest;
-import com.shoekream.domain.product.dto.ProductCreateResponse;
-import com.shoekream.domain.product.dto.ProductDeleteResponse;
-import com.shoekream.domain.product.dto.ProductInfo;
+import com.shoekream.domain.product.dto.*;
 import com.shoekream.service.BrandService;
 import com.shoekream.service.ProductService;
 import jakarta.validation.Valid;
@@ -40,4 +37,9 @@ public class ProductApiController {
         return ResponseEntity.status(HttpStatus.OK).body(Response.success(productService.deleteProduct(id)));
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<Response<ProductUpdateResponse>> updateProduct(@PathVariable Long id, @RequestBody ProductUpdateRequest requestDto) {
+        return ResponseEntity.status(HttpStatus.OK).body(Response.success(productService.updateProduct(id, requestDto)));
+    }
 }
+
