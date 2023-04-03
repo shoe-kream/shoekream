@@ -66,6 +66,26 @@ public class Product extends BaseTimeEntity {
     @OneToMany(mappedBy = "product", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Trade> trades = new ArrayList<>();
 
+    public static Product createProduct(ProductCreateRequest request, Brand savedBrand) {
+        return Product.builder()
+                .name(request.getName())
+                .modelNumber(request.getModelNumber())
+                .color(request.getColor())
+                .releaseDate(request.getReleaseDate())
+                .releasePrice(request.getReleasePrice())
+                .currency(request.getCurrency())
+                .sizeClassification(request.getSizeClassification())
+                .sizeUnit(request.getSizeUnit())
+                .minSize(request.getMinSize())
+                .maxSize(request.getMaxSize())
+                .sizeGap(request.getSizeGap())
+                .originImagePath(request.getOriginImagePath())
+                .thumbnailImagePath(request.getThumbnailImagePath())
+                .resizedImagePath(request.getResizedImagePath())
+                .brand(savedBrand)
+                .build();
+    }
+
     public ProductCreateResponse toProductCreateResponse() {
         return ProductCreateResponse.builder()
                 .name(this.name)

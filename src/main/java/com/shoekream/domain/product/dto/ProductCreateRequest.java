@@ -1,13 +1,9 @@
 package com.shoekream.domain.product.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.shoekream.domain.brand.dto.BrandInfo;
-import com.shoekream.domain.product.Product;
 import com.shoekream.domain.product.common.Currency;
 import com.shoekream.domain.product.common.SizeClassification;
 import com.shoekream.domain.product.common.SizeUnit;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
@@ -16,8 +12,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 public class ProductCreateRequest {
 
@@ -35,7 +31,7 @@ public class ProductCreateRequest {
     private LocalDate releaseDate;
 
     @Positive(message = "올바른 출시가를 입력하세요.")
-    @NotBlank(message = "출시가를 입력하세요.")
+    @NotNull(message = "출시가를 입력하세요.")
     private Long releasePrice;
 
     @NotNull(message = "출시가 통화를 선택하세요.")
@@ -60,7 +56,7 @@ public class ProductCreateRequest {
     private Double sizeGap;
 
     @NotNull(message = "상품의 브랜드를 선택해야 합니다.")
-    private BrandInfo brandInfo;
+    private Long brandId;
 
     private String originImagePath;
 
@@ -68,23 +64,4 @@ public class ProductCreateRequest {
 
     private String resizedImagePath;
 
-    public Product toEntity() {
-        return Product.builder()
-                .name(this.name)
-                .modelNumber(this.modelNumber)
-                .color(this.color)
-                .releaseDate(this.releaseDate)
-                .releasePrice(this.releasePrice)
-                .currency(this.currency)
-                .sizeClassification(this.sizeClassification)
-                .sizeUnit(this.sizeUnit)
-                .minSize(this.minSize)
-                .maxSize(this.maxSize)
-                .sizeGap(this.sizeGap)
-                .brand(this.brandInfo.toEntity())
-                .originImagePath(this.originImagePath)
-                .thumbnailImagePath(this.thumbnailImagePath)
-                .resizedImagePath(this.resizedImagePath)
-                .build();
-    }
 }

@@ -2,6 +2,8 @@ package com.shoekream.service;
 
 import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
+import com.shoekream.domain.brand.Brand;
+import com.shoekream.domain.brand.BrandRepository;
 import com.shoekream.domain.product.Product;
 import com.shoekream.domain.product.ProductRepository;
 import com.shoekream.domain.product.dto.*;
@@ -16,15 +18,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class ProductService {
 
+    private final BrandRepository brandRepository;
     private final ProductRepository productRepository;
 
     public ProductCreateResponse saveProduct(ProductCreateRequest requestDto) {
 
+        Brand savedBrand = validateBrandExists(requestDto);
+
         isExistsProduct(requestDto.getName(), requestDto.getModelNumber());
 
-        Product savedProduct = productRepository.save(requestDto.toEntity());
+        Product savedProduct = productRepository.save(Product.createProduct(requestDto,savedBrand));
 
         return savedProduct.toProductCreateResponse();
+    }
+
+    private Brand validateBrandExists(ProductCreateRequest requestDto) {
+        return  brandRepository.findById(requestDto.getBrandId())
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
@@ -63,8 +73,8 @@ public class ProductService {
         }
     }
 
-    private void isExistsProduct(String updateProduct, String updateProduct1) {
-        if(productRepository.existsByNameAndModelNumber(updateProduct, updateProduct1)) {
+    private void isExistsProduct(String name, String modelNumber) {
+        if(productRepository.existsByNameAndModelNumber(name, modelNumber)) {
             throw new ShoeKreamException(ErrorCode.DUPLICATED_PRODUCT);
         }
     }

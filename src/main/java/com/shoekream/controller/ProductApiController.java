@@ -2,13 +2,13 @@ package com.shoekream.controller;
 
 import com.shoekream.common.Response;
 import com.shoekream.domain.product.dto.*;
-import com.shoekream.service.BrandService;
 import com.shoekream.service.ProductService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,11 +19,8 @@ public class ProductApiController {
 
     private final ProductService productService;
 
-    private final BrandService brandService;
-
     @PostMapping("")
-    public ResponseEntity<Response<ProductCreateResponse>> createProduct(@Valid @RequestBody ProductCreateRequest requestDto) {
-        brandService.checkProductBrandExists(requestDto.getBrandInfo());
+    public ResponseEntity<Response<ProductCreateResponse>> createProduct(@Validated @RequestBody ProductCreateRequest requestDto, BindingResult br) {
         return ResponseEntity.status(HttpStatus.CREATED).body(Response.success(productService.saveProduct(requestDto)));
     }
 
