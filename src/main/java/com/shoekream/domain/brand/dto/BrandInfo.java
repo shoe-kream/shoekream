@@ -2,14 +2,11 @@ package com.shoekream.domain.brand.dto;
 
 
 import com.shoekream.domain.brand.Brand;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 public class BrandInfo {
 
@@ -20,6 +17,7 @@ public class BrandInfo {
 
     public Brand toEntity() {
         return Brand.builder()
+                .id(this.id)
                 .name(this.name)
                 .originImagePath(this.originImagePath)
                 .thumbnailImagePath(this.thumbnailImagePath)
