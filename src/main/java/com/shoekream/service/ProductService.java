@@ -32,10 +32,7 @@ public class ProductService {
         return savedProduct.toProductCreateResponse();
     }
 
-    private Brand validateBrandExists(ProductCreateRequest requestDto) {
-        return  brandRepository.findById(requestDto.getBrandId())
-                .orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
-    }
+
 
     @Transactional(readOnly = true)
     public ProductInfo getProductInfo(Long id) {
@@ -47,8 +44,7 @@ public class ProductService {
 
     public ProductDeleteResponse deleteProduct(Long id) {
 
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ShoeKreamException(ErrorCode.PRODUCT_NOT_FOUND));
+        Product product = validateProductExists(id);
 
         productRepository.delete(product);
 
@@ -57,14 +53,26 @@ public class ProductService {
 
     public ProductUpdateResponse updateProduct(Long id, ProductUpdateRequest updatedProduct) {
 
-        Product savedProduct = productRepository.findById(id)
-                .orElseThrow(() -> new ShoeKreamException(ErrorCode.PRODUCT_NOT_FOUND));
+        brandRepository.findById(updatedProduct.getBrandId())
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
+
+        Product savedProduct = validateProductExists(id);
 
         checkDuplicatedUpdateProduct(updatedProduct, savedProduct);
 
         savedProduct.update(updatedProduct);
 
         return savedProduct.toProductUpdateResponse();
+    }
+
+    private Brand validateBrandExists(ProductCreateRequest requestDto) {
+        return brandRepository.findById(requestDto.getBrandId())
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
+    }
+
+    private Product validateProductExists(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 
     private void checkDuplicatedUpdateProduct(ProductUpdateRequest updateProduct, Product savedProduct) {

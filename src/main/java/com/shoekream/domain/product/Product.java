@@ -137,7 +137,6 @@ public class Product extends BaseTimeEntity {
         this.minSize = updatedProduct.getMinSize();
         this.maxSize = updatedProduct.getMaxSize();
         this.sizeGap = updatedProduct.getSizeGap();
-        this.brand = updatedProduct.getBrandInfo().toEntity();
         this.originImagePath = updatedProduct.getOriginImagePath();
         this.thumbnailImagePath = updatedProduct.getThumbnailImagePath();
         this.resizedImagePath = updatedProduct.getResizedImagePath();

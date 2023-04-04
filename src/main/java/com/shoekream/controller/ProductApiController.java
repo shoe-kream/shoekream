@@ -34,8 +34,8 @@ public class ProductApiController {
         return ResponseEntity.status(HttpStatus.OK).body(Response.success(productService.deleteProduct(id)));
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<Response<ProductUpdateResponse>> updateProduct(@PathVariable Long id, @RequestBody ProductUpdateRequest requestDto) {
+    @PutMapping("/{id}")
+    public ResponseEntity<Response<ProductUpdateResponse>> updateProduct(@PathVariable Long id, @Validated @RequestBody ProductUpdateRequest requestDto, BindingResult br) {
         return ResponseEntity.status(HttpStatus.OK).body(Response.success(productService.updateProduct(id, requestDto)));
     }
 }
