@@ -2,7 +2,10 @@ package com.shoekream.common.exception;
 
 import com.shoekream.common.Response;
 import lombok.extern.slf4j.Slf4j;
+<<<<<<< HEAD
 import org.springframework.http.HttpStatus;
+=======
+>>>>>>> 863ba84f8437f177fbbac158bd61aa02620e33ca
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
