@@ -1,7 +1,7 @@
 package com.shoekream.domain.brand.dto;
 
 import com.shoekream.domain.brand.Brand;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Getter
@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BrandCreateRequest {
 
-    @NotEmpty(message = "브랜드 명을 입력하세요.")
+    @NotBlank(message = "브랜드 명을 입력하세요.")
     private String name;
 
     private String originImagePath;
