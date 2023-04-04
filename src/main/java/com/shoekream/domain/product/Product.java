@@ -5,6 +5,7 @@ import com.shoekream.domain.brand.Brand;
 import com.shoekream.domain.product.common.Currency;
 import com.shoekream.domain.product.common.SizeClassification;
 import com.shoekream.domain.product.common.SizeUnit;
+import com.shoekream.domain.product.dto.*;
 import com.shoekream.domain.trade.Trade;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -65,4 +66,89 @@ public class Product extends BaseTimeEntity {
     @OneToMany(mappedBy = "product", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Trade> trades = new ArrayList<>();
 
+    public static Product createProduct(ProductCreateRequest request, Brand savedBrand) {
+        return Product.builder()
+                .name(request.getName())
+                .modelNumber(request.getModelNumber())
+                .color(request.getColor())
+                .releaseDate(request.getReleaseDate())
+                .releasePrice(request.getReleasePrice())
+                .currency(request.getCurrency())
+                .sizeClassification(request.getSizeClassification())
+                .sizeUnit(request.getSizeUnit())
+                .minSize(request.getMinSize())
+                .maxSize(request.getMaxSize())
+                .sizeGap(request.getSizeGap())
+                .originImagePath(request.getOriginImagePath())
+                .thumbnailImagePath(request.getThumbnailImagePath())
+                .resizedImagePath(request.getResizedImagePath())
+                .brand(savedBrand)
+                .build();
+    }
+
+    public ProductCreateResponse toProductCreateResponse() {
+        return ProductCreateResponse.builder()
+                .name(this.name)
+                .modelNumber(this.modelNumber)
+                .minSize(this.minSize)
+                .maxSize(this.maxSize)
+                .brandName(this.brand.getName())
+                .build();
+    }
+
+    public ProductInfo toProductInfo() {
+        return ProductInfo.builder()
+                .id(this.id)
+                .name(this.name)
+                .modelNumber(this.modelNumber)
+                .color(this.color)
+                .releaseDate(this.releaseDate)
+                .releasePrice(this.releasePrice)
+                .currency(this.currency)
+                .sizeClassification(this.sizeClassification)
+                .sizeUnit(this.sizeUnit)
+                .minSize(this.minSize)
+                .maxSize(this.maxSize)
+                .sizeGap(this.sizeGap)
+                .brandInfo(this.brand.toBrandInfo())
+                .originImagePath(this.originImagePath)
+                .thumbnailImagePath(this.thumbnailImagePath)
+                .resizedImagePath(this.resizedImagePath)
+                .build();
+    }
+
+    public ProductDeleteResponse toProductDeleteResponse() {
+        return ProductDeleteResponse.builder()
+                .name(this.name)
+                .modelNumber(this.modelNumber)
+                .brandName(this.brand.getName())
+                .build();
+    }
+
+    public void update(ProductUpdateRequest updatedProduct) {
+        this.name = updatedProduct.getName();
+        this.modelNumber = updatedProduct.getModelNumber();
+        this.color = updatedProduct.getColor();
+        this.releaseDate = updatedProduct.getReleaseDate();
+        this.releasePrice = updatedProduct.getReleasePrice();
+        this.currency = updatedProduct.getCurrency();
+        this.sizeClassification = updatedProduct.getSizeClassification();
+        this.sizeUnit = updatedProduct.getSizeUnit();
+        this.minSize = updatedProduct.getMinSize();
+        this.maxSize = updatedProduct.getMaxSize();
+        this.sizeGap = updatedProduct.getSizeGap();
+        this.originImagePath = updatedProduct.getOriginImagePath();
+        this.thumbnailImagePath = updatedProduct.getThumbnailImagePath();
+        this.resizedImagePath = updatedProduct.getResizedImagePath();
+    }
+
+    public ProductUpdateResponse toProductUpdateResponse() {
+        return ProductUpdateResponse.builder()
+                .name(this.name)
+                .modelNumber(this.modelNumber)
+                .minSize(this.minSize)
+                .maxSize(this.maxSize)
+                .brandName(this.brand.getName())
+                .build();
+    }
 }
