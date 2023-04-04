@@ -1,20 +1,19 @@
 package com.shoekream.service;
 
 
-import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.domain.cart.Cart;
 import com.shoekream.domain.cart.CartRepository;
 import com.shoekream.domain.user.User;
 import com.shoekream.domain.user.UserRepository;
-import com.shoekream.domain.user.dto.UserCreateRequest;
-import com.shoekream.domain.user.dto.UserCreateResponse;
-import com.shoekream.domain.user.dto.UserLoginRequest;
+import com.shoekream.domain.user.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.shoekream.common.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,10 +31,10 @@ public class UserService {
     public UserCreateResponse createUser(UserCreateRequest request){
 
         if (isExistsByEmail(request)) {
-            throw new ShoeKreamException(ErrorCode.DUPLICATE_EMAIL);
+            throw new ShoeKreamException(DUPLICATE_EMAIL);
         }
         if (isExistsByNickname(request)) {
-            throw new ShoeKreamException(ErrorCode.DUPLICATE_NICKNAME);
+            throw new ShoeKreamException(DUPLICATE_NICKNAME);
         }
 
         request.encodePassword(encoder);
@@ -57,10 +56,22 @@ public class UserService {
     public String loginUser(UserLoginRequest request) {
 
         User foundUser = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ShoeKreamException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
 
         foundUser.checkPassword(encoder,request.getPassword());
 
         return foundUser.createToken(secretKey);
+    }
+
+    @Transactional
+    public UserResponse changePasswordUser(UserChangePasswordRequest request, String email) {
+        User foundUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
+
+        foundUser.checkPassword(encoder, request.getOldPassword());
+
+        foundUser.changePassword(encoder, request.getNewPassword());
+
+        return foundUser.toUserResponse();
     }
 }

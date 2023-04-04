@@ -6,6 +6,7 @@ import com.shoekream.common.util.JwtUtil;
 import com.shoekream.domain.cart.Cart;
 import com.shoekream.domain.point.Point;
 import com.shoekream.domain.user.dto.UserCreateResponse;
+import com.shoekream.domain.user.dto.UserResponse;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -78,5 +79,16 @@ public class User extends UserBase {
 
     public String createToken(String secretKey) {
         return JwtUtil.createToken(this.email, this.userRole.toString(), secretKey, TOKEN_VALID_MILLIS);
+    }
+
+    public void changePassword(BCryptPasswordEncoder encoder, String newPassword) {
+        this.password = encoder.encode(newPassword);
+    }
+
+    public UserResponse toUserResponse() {
+        return UserResponse.builder()
+                .userId(this.getId())
+                .email(this.email)
+                .build();
     }
 }

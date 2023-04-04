@@ -1,19 +1,15 @@
 package com.shoekream.controller;
 
 import com.shoekream.common.Response;
-import com.shoekream.domain.user.dto.UserCreateRequest;
-import com.shoekream.domain.user.dto.UserCreateResponse;
-import com.shoekream.domain.user.dto.UserLoginRequest;
+import com.shoekream.domain.user.dto.*;
 import com.shoekream.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,8 +24,16 @@ public class UserApiController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Response<String>> login(@Validated @RequestBody UserLoginRequest request,BindingResult br) {
+    public ResponseEntity<Response<String>> login(@Validated @RequestBody UserLoginRequest request, BindingResult br) {
         String jwt = userService.loginUser(request);
         return ResponseEntity.ok(Response.success(jwt));
+    }
+
+    @PatchMapping("/password")
+    public ResponseEntity<Response<UserResponse>> changePassword(Authentication authentication, @Validated @RequestBody UserChangePasswordRequest request, BindingResult br) {
+        String email = authentication.getName();
+        UserResponse response = userService.changePasswordUser(request, email);
+
+        return ResponseEntity.ok(Response.success(response));
     }
 }
