@@ -1,15 +1,11 @@
 package com.shoekream.service;
 
-import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.domain.cart.Cart;
 import com.shoekream.domain.cart.CartRepository;
 import com.shoekream.domain.user.User;
 import com.shoekream.domain.user.UserRepository;
-import com.shoekream.domain.user.dto.UserChangeNicknameRequest;
-import com.shoekream.domain.user.dto.UserChangePasswordRequest;
-import com.shoekream.domain.user.dto.UserCreateRequest;
-import com.shoekream.domain.user.dto.UserLoginRequest;
+import com.shoekream.domain.user.dto.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -278,6 +274,57 @@ class UserServiceTest {
             verify(userRepository, atLeastOnce()).findByEmail(email);
             verify(userRepository, atLeastOnce()).existsByNickname(request.getNickname());
             verify(mockUser, atLeastOnce()).changeNickname(request);
+
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 탈퇴 테스트")
+    class UserWithdraw {
+
+        String email = "email";
+
+        UserWithdrawRequest request = new UserWithdrawRequest("password1!");
+
+        @Test
+        @DisplayName("회원 탈퇴 성공 테스트")
+        public void success() {
+            given(userRepository.findByEmail(email))
+                    .willReturn(Optional.of(mockUser));
+
+            assertDoesNotThrow(() -> userService.withdrawUser(request, email));
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+        }
+
+        @Test
+        @DisplayName("회원 탈퇴 실패 테스트 (가입되지 않은 회원인 경우)")
+        public void error1() {
+            when(userRepository.findByEmail(email))
+                    .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
+
+            ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> userService.withdrawUser(request, email));
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(USER_NOT_FOUND);
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+
+        }
+
+        @Test
+        @DisplayName("회원 탈퇴 실패 테스트 (비밀번호가 일치하지 않는 경우)")
+        public void error2() {
+
+            given(userRepository.findByEmail(email))
+                    .willReturn(Optional.of(mockUser));
+
+            doThrow(new ShoeKreamException(WRONG_PASSWORD))
+                    .when(mockUser).checkPassword(encoder, request.getPassword());
+
+            ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> userService.withdrawUser(request, email));
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(WRONG_PASSWORD);
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+            verify(mockUser, atLeastOnce()).checkPassword(encoder, request.getPassword());
 
         }
     }

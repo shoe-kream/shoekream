@@ -29,8 +29,7 @@ import static com.shoekream.common.exception.ErrorCode.WRONG_PASSWORD;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -361,6 +360,88 @@ class UserApiControllerTest {
             UserChangeNicknameRequest request = new UserChangeNicknameRequest();
 
             mockMvc.perform(patch("/api/v1/users/nickname")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 탈퇴 테스트")
+    class UserWithdraw {
+        Long userId = 1L;
+        String email = "email";
+
+        UserChangePasswordRequest request1 = new UserChangePasswordRequest("oldPassword12!", "oldPassword12!");
+        UserWithdrawRequest request = new UserWithdrawRequest("password");
+        UserResponse response = new UserResponse(userId, email);
+
+        String token = JwtUtil.createToken(email, "ROLE_USER", secretKey, 1000L * 60 * 60);
+
+        @Test
+        @DisplayName("회원 탈퇴 성공 테스트")
+        void success() throws Exception {
+
+            given(userService.withdrawUser(request,email))
+                    .willReturn(response);
+
+            mockMvc.perform(delete("/api/v1/users")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("SUCCESS"))
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result.userId").value(userId))
+                    .andExpect(jsonPath("$.result.email").value(email));
+        }
+
+        @Test
+        @DisplayName("회원 탈퇴 실패 테스트 (가입된 회원이 아닌 경우)")
+        void error1() throws Exception {
+
+            when(userService.withdrawUser(request,email))
+                    .thenThrow(new ShoeKreamException(ErrorCode.USER_NOT_FOUND));
+
+            mockMvc.perform(delete("/api/v1/users")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+
+        @Test
+        @DisplayName("회원 탈퇴 실패 테스트 (비밀번호 일치하지 않는 경우)")
+        void error2() throws Exception {
+
+            when(userService.withdrawUser(request,email))
+                    .thenThrow(new ShoeKreamException(WRONG_PASSWORD));
+
+            mockMvc.perform(delete("/api/v1/users")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+
+        @Test
+        @DisplayName("회원 탈퇴 실패 테스트 (Binding error 발생)")
+        void error3() throws Exception {
+
+            UserWithdrawRequest request = new UserWithdrawRequest(null);
+
+            mockMvc.perform(delete("/api/v1/users")
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                             .contentType(APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
