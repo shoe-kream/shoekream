@@ -81,4 +81,9 @@ public class BrandService {
         return true;
     }
 
+    public void checkProductBrandExists(BrandInfo brand) {
+        brandRepository.findById(brand.getId())
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
+    }
+
 }
