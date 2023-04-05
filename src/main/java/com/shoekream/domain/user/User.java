@@ -104,4 +104,8 @@ public class User extends UserBase {
     private boolean canChangeNickname() {
         return this.nicknameModifiedDate.isBefore(LocalDateTime.now().minusDays(7));
     }
+
+    public boolean hasPoint() {
+        return this.point > 0;
+    }
 }

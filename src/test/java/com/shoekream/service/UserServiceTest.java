@@ -327,5 +327,25 @@ class UserServiceTest {
             verify(mockUser, atLeastOnce()).checkPassword(encoder, request.getPassword());
 
         }
+
+        @Test
+        @DisplayName("회원 탈퇴 실패 테스트 (잔여 포인트가 남아 있는 경우)")
+        public void error3() {
+
+            given(userRepository.findByEmail(email))
+                    .willReturn(Optional.of(mockUser));
+            doNothing().when(mockUser)
+                    .checkPassword(encoder,request.getPassword());
+
+            when(mockUser.hasPoint())
+                    .thenReturn(true);
+
+            ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> userService.withdrawUser(request, email));
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(WITHDRAWAL_NOT_ALLOWED_POINT);
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+            verify(mockUser, atLeastOnce()).checkPassword(encoder, request.getPassword());
+
+        }
     }
 }

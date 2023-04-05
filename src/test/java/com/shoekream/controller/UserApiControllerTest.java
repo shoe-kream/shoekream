@@ -24,8 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.shoekream.common.exception.ErrorCode.CHANGE_NOT_ALLOWED;
-import static com.shoekream.common.exception.ErrorCode.WRONG_PASSWORD;
+import static com.shoekream.common.exception.ErrorCode.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -436,8 +435,24 @@ class UserApiControllerTest {
         }
 
         @Test
-        @DisplayName("회원 탈퇴 실패 테스트 (Binding error 발생)")
+        @DisplayName("회원 탈퇴 실패 테스트 (잔여 포인트가 남아 있는 경우)")
         void error3() throws Exception {
+
+            when(userService.withdrawUser(request,email))
+                    .thenThrow(new ShoeKreamException(WITHDRAWAL_NOT_ALLOWED_POINT));
+
+            mockMvc.perform(delete("/api/v1/users")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+        @Test
+        @DisplayName("회원 탈퇴 실패 테스트 (Binding error 발생)")
+        void error4() throws Exception {
 
             UserWithdrawRequest request = new UserWithdrawRequest(null);
 

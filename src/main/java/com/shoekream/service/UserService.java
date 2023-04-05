@@ -95,6 +95,10 @@ public class UserService {
 
         foundUser.checkPassword(encoder, request.getPassword());
 
+        if (foundUser.hasPoint()) {
+            throw new ShoeKreamException(WITHDRAWAL_NOT_ALLOWED_POINT);
+        }
+
         userRepository.delete(foundUser);
 
         return foundUser.toUserResponse();
