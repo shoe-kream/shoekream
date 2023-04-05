@@ -1,5 +1,6 @@
 package com.shoekream.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shoekream.common.aop.BindingCheck;
 import com.shoekream.common.config.SecurityConfig;
@@ -56,7 +57,6 @@ class UserApiControllerTest {
                 .webAppContextSetup(wac)
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
-
 
 
     }
@@ -222,7 +222,7 @@ class UserApiControllerTest {
         @DisplayName("회원 비밀번호 변경 성공 테스트")
         void success() throws Exception {
 
-            given(userService.changePasswordUser(request,email))
+            given(userService.changePasswordUser(request, email))
                     .willReturn(response);
 
             mockMvc.perform(patch("/api/v1/users/password")
@@ -241,7 +241,7 @@ class UserApiControllerTest {
         @DisplayName("회원 비밀번호 변경 실패 테스트 (가입된 회원이 아닌 경우)")
         void error1() throws Exception {
 
-            when(userService.changePasswordUser(request,email))
+            when(userService.changePasswordUser(request, email))
                     .thenThrow(new ShoeKreamException(ErrorCode.USER_NOT_FOUND));
 
             mockMvc.perform(patch("/api/v1/users/password")
@@ -258,7 +258,7 @@ class UserApiControllerTest {
         @DisplayName("회원 비밀번호 변경 실패 테스트 (비밀번호 일치하지 않는 경우 발생)")
         void error2() throws Exception {
 
-            when(userService.changePasswordUser(request,email))
+            when(userService.changePasswordUser(request, email))
                     .thenThrow(new ShoeKreamException(WRONG_PASSWORD));
 
             mockMvc.perform(patch("/api/v1/users/password")
@@ -303,7 +303,7 @@ class UserApiControllerTest {
         @DisplayName("회원 닉네임 변경 성공 테스트")
         void success() throws Exception {
 
-            given(userService.changeNicknameUser(request,email))
+            given(userService.changeNicknameUser(request, email))
                     .willReturn(response);
 
             mockMvc.perform(patch("/api/v1/users/nickname")
@@ -322,7 +322,7 @@ class UserApiControllerTest {
         @DisplayName("회원 닉네임 변경 실패 테스트 (회원이 존재하지 않는 경우)")
         void error1() throws Exception {
 
-            when(userService.changeNicknameUser(request,email))
+            when(userService.changeNicknameUser(request, email))
                     .thenThrow(new ShoeKreamException(ErrorCode.USER_NOT_FOUND));
 
             mockMvc.perform(patch("/api/v1/users/nickname")
@@ -339,7 +339,7 @@ class UserApiControllerTest {
         @DisplayName("회원 닉네임 변경 실패 테스트 (닉네임 변경한지 7일이 지나지 않은 경우)")
         void error2() throws Exception {
 
-            when(userService.changeNicknameUser(request,email))
+            when(userService.changeNicknameUser(request, email))
                     .thenThrow(new ShoeKreamException(CHANGE_NOT_ALLOWED));
 
             mockMvc.perform(patch("/api/v1/users/nickname")
@@ -374,8 +374,6 @@ class UserApiControllerTest {
     class UserWithdraw {
         Long userId = 1L;
         String email = "email";
-
-        UserChangePasswordRequest request1 = new UserChangePasswordRequest("oldPassword12!", "oldPassword12!");
         UserWithdrawRequest request = new UserWithdrawRequest("password");
         UserResponse response = new UserResponse(userId, email);
 
@@ -385,7 +383,7 @@ class UserApiControllerTest {
         @DisplayName("회원 탈퇴 성공 테스트")
         void success() throws Exception {
 
-            given(userService.withdrawUser(request,email))
+            given(userService.withdrawUser(request, email))
                     .willReturn(response);
 
             mockMvc.perform(delete("/api/v1/users")
@@ -404,7 +402,7 @@ class UserApiControllerTest {
         @DisplayName("회원 탈퇴 실패 테스트 (가입된 회원이 아닌 경우)")
         void error1() throws Exception {
 
-            when(userService.withdrawUser(request,email))
+            when(userService.withdrawUser(request, email))
                     .thenThrow(new ShoeKreamException(ErrorCode.USER_NOT_FOUND));
 
             mockMvc.perform(delete("/api/v1/users")
@@ -421,7 +419,7 @@ class UserApiControllerTest {
         @DisplayName("회원 탈퇴 실패 테스트 (비밀번호 일치하지 않는 경우)")
         void error2() throws Exception {
 
-            when(userService.withdrawUser(request,email))
+            when(userService.withdrawUser(request, email))
                     .thenThrow(new ShoeKreamException(WRONG_PASSWORD));
 
             mockMvc.perform(delete("/api/v1/users")
@@ -438,7 +436,7 @@ class UserApiControllerTest {
         @DisplayName("회원 탈퇴 실패 테스트 (잔여 포인트가 남아 있는 경우)")
         void error3() throws Exception {
 
-            when(userService.withdrawUser(request,email))
+            when(userService.withdrawUser(request, email))
                     .thenThrow(new ShoeKreamException(WITHDRAWAL_NOT_ALLOWED_POINT));
 
             mockMvc.perform(delete("/api/v1/users")
@@ -450,6 +448,7 @@ class UserApiControllerTest {
                     .andExpect(jsonPath("$.message").value("ERROR"))
                     .andExpect(jsonPath("$.result").exists());
         }
+
         @Test
         @DisplayName("회원 탈퇴 실패 테스트 (Binding error 발생)")
         void error4() throws Exception {
@@ -468,4 +467,71 @@ class UserApiControllerTest {
 
     }
 
+    @Nested
+    @DisplayName("회원 계좌 정보 등록 테스트")
+    class UserUpdateAccount{
+        Long userId = 1L;
+        String email = "email";
+
+        UserUpdateAccountRequest request = new UserUpdateAccountRequest("bankName", "accountNumber", "depositor");
+
+        UserResponse response = new UserResponse(userId, email);
+
+        String token = JwtUtil.createToken(email, "ROLE_USER", secretKey, 1000L * 60 * 60);
+        @Test
+        @DisplayName("계좌 정보 등록 성공")
+        void success() throws Exception {
+
+            given(userService.updateAccountUser(request, email))
+                    .willReturn(response);
+
+            mockMvc.perform(patch("/api/v1/users/account")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("SUCCESS"))
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result.userId").value(userId))
+                    .andExpect(jsonPath("$.result.email").value(email));
+        }
+
+        @Test
+        @DisplayName("계좌 정보 등록 실패 (가입된 회원이 아닌 경우)")
+        void error1() throws Exception {
+
+            when(userService.updateAccountUser(request, email))
+                    .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
+
+            mockMvc.perform(patch("/api/v1/users/account")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+
+        @Test
+        @DisplayName("계좌 정보 등록 실패 (BindingError 발생)")
+        void error2() throws Exception {
+
+            UserUpdateAccountRequest request = new UserUpdateAccountRequest(null, "accountNumber", "depositor");
+
+            when(userService.updateAccountUser(request, email))
+                    .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
+
+            mockMvc.perform(patch("/api/v1/users/account")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+
+    }
 }

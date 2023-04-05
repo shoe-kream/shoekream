@@ -348,4 +348,38 @@ class UserServiceTest {
 
         }
     }
+
+    @Nested
+    @DisplayName("회원 계좌 정보 입력 테스트")
+    class UserUpdateAccount {
+
+        String email = "email";
+
+        UserUpdateAccountRequest request = new UserUpdateAccountRequest("bankName", "accountNumber", "depositor");
+
+        @Test
+        @DisplayName("회원 계좌 정보 입력 성공 테스트")
+        public void success() {
+            given(userRepository.findByEmail(email))
+                    .willReturn(Optional.of(mockUser));
+
+            assertDoesNotThrow(() -> userService.updateAccountUser(request, email));
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+        }
+
+        @Test
+        @DisplayName("회원 계좌 정보 입력 실패 테스트 (가입되지 않은 회원인 경우)")
+        public void error1() {
+            when(userRepository.findByEmail(email))
+                    .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
+
+            ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> userService.updateAccountUser(request, email));
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(USER_NOT_FOUND);
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+
+        }
+
+    }
 }
