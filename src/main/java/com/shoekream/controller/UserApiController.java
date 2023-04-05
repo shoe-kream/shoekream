@@ -36,4 +36,12 @@ public class UserApiController {
 
         return ResponseEntity.ok(Response.success(response));
     }
+
+    @PatchMapping("/nickname")
+    public ResponseEntity<Response<UserResponse>> changeNickname(Authentication authentication, @Validated @RequestBody UserChangeNicknameRequest request, BindingResult br) {
+        String email = authentication.getName();
+        UserResponse response = userService.changeNicknameUser(request, email);
+
+        return ResponseEntity.ok(Response.success(response));
+    }
 }

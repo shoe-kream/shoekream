@@ -32,7 +32,7 @@ public class SecurityConfig {
 
                 .and()
                 .authorizeHttpRequests()
-                .requestMatchers(HttpMethod.POST,"/api/v1/users/password").authenticated()
+                .requestMatchers(HttpMethod.PATCH,"/api/v1/users/password").authenticated()
                 .anyRequest().permitAll()
 
                 .and()
