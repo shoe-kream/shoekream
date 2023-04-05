@@ -33,7 +33,7 @@ public class UserService {
         if (isExistsByEmail(request)) {
             throw new ShoeKreamException(DUPLICATE_EMAIL);
         }
-        if (isExistsByNickname(request)) {
+        if (isExistsByNickname(request.getNickname())) {
             throw new ShoeKreamException(DUPLICATE_NICKNAME);
         }
 
@@ -45,8 +45,8 @@ public class UserService {
         return savedUser.toCreateResponse();
     }
 
-    private boolean isExistsByNickname(UserCreateRequest request) {
-        return userRepository.existsByNickname(request.getNickname());
+    private boolean isExistsByNickname(String nickname) {
+        return userRepository.existsByNickname(nickname);
     }
 
     private boolean isExistsByEmail(UserCreateRequest request) {
@@ -75,10 +75,17 @@ public class UserService {
         return foundUser.toUserResponse();
     }
 
+    @Transactional
     public UserResponse changeNicknameUser(UserChangeNicknameRequest request, String email) {
         User foundUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
 
+        if (isExistsByNickname(request.getNickname())) {
+            throw new ShoeKreamException(DUPLICATE_NICKNAME);
+        }
 
+        foundUser.changeNickname(request);
+
+        return foundUser.toUserResponse();
     }
 }

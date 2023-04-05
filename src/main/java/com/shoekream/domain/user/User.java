@@ -5,6 +5,7 @@ import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.common.util.JwtUtil;
 import com.shoekream.domain.cart.Cart;
 import com.shoekream.domain.point.Point;
+import com.shoekream.domain.user.dto.UserChangeNicknameRequest;
 import com.shoekream.domain.user.dto.UserCreateResponse;
 import com.shoekream.domain.user.dto.UserResponse;
 import jakarta.persistence.*;
@@ -90,5 +91,17 @@ public class User extends UserBase {
                 .userId(this.getId())
                 .email(this.email)
                 .build();
+    }
+
+    public void changeNickname(UserChangeNicknameRequest request) {
+        if(!canChangeNickname()){
+            throw new ShoeKreamException(ErrorCode.CHANGE_NOT_ALLOWED);
+        }
+        this.nickname = request.getNickname();
+        this.nicknameModifiedDate = LocalDateTime.now();
+    }
+
+    private boolean canChangeNickname() {
+        return this.nicknameModifiedDate.isBefore(LocalDateTime.now().minusDays(7));
     }
 }
