@@ -24,14 +24,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Optional;
-
+import static com.shoekream.common.exception.ErrorCode.CHANGE_NOT_ALLOWED;
 import static com.shoekream.common.exception.ErrorCode.WRONG_PASSWORD;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.when;
-import static org.mockito.Mockito.doThrow;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -241,7 +240,7 @@ class UserApiControllerTest {
         }
 
         @Test
-        @DisplayName("로그인 실패 테스트 (비밀번호가 일치하지 않는 경우)")
+        @DisplayName("회원 비밀번호 변경 실패 테스트 (가입된 회원이 아닌 경우)")
         void error1() throws Exception {
 
             when(userService.changePasswordUser(request,email))
@@ -258,13 +257,110 @@ class UserApiControllerTest {
         }
 
         @Test
-        @DisplayName("로그인 실패 테스트 (Binding error 발생)")
+        @DisplayName("회원 비밀번호 변경 실패 테스트 (비밀번호 일치하지 않는 경우 발생)")
         void error2() throws Exception {
 
             when(userService.changePasswordUser(request,email))
                     .thenThrow(new ShoeKreamException(WRONG_PASSWORD));
 
             mockMvc.perform(patch("/api/v1/users/password")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+
+        @Test
+        @DisplayName("회원 비밀번호 변경 실패 테스트 (Binding error 발생)")
+        void error3() throws Exception {
+
+            UserChangePasswordRequest request = new UserChangePasswordRequest("oldPassword", null);
+
+            mockMvc.perform(patch("/api/v1/users/password")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+
+    }
+
+    @Nested
+    @DisplayName("회원 닉네임 변경 테스트")
+    class UserChangeNickname {
+        Long userId = 1L;
+        String email = "email";
+        UserChangeNicknameRequest request = new UserChangeNicknameRequest("newNickname");
+        UserResponse response = new UserResponse(userId, email);
+
+        String token = JwtUtil.createToken(email, "ROLE_USER", secretKey, 1000L * 60 * 60);
+
+        @Test
+        @DisplayName("회원 닉네임 변경 성공 테스트")
+        void success() throws Exception {
+
+            given(userService.changeNicknameUser(request,email))
+                    .willReturn(response);
+
+            mockMvc.perform(patch("/api/v1/users/nickname")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("SUCCESS"))
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result.userId").value(userId))
+                    .andExpect(jsonPath("$.result.email").value(email));
+        }
+
+        @Test
+        @DisplayName("회원 닉네임 변경 실패 테스트 (회원이 존재하지 않는 경우)")
+        void error1() throws Exception {
+
+            when(userService.changeNicknameUser(request,email))
+                    .thenThrow(new ShoeKreamException(ErrorCode.USER_NOT_FOUND));
+
+            mockMvc.perform(patch("/api/v1/users/nickname")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+
+        @Test
+        @DisplayName("회원 닉네임 변경 실패 테스트 (닉네임 변경한지 7일이 지나지 않은 경우)")
+        void error2() throws Exception {
+
+            when(userService.changeNicknameUser(request,email))
+                    .thenThrow(new ShoeKreamException(CHANGE_NOT_ALLOWED));
+
+            mockMvc.perform(patch("/api/v1/users/nickname")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+
+        @Test
+        @DisplayName("회원 닉네임 변경 실패 테스트 (Binding error 발생)")
+        void error3() throws Exception {
+
+            UserChangeNicknameRequest request = new UserChangeNicknameRequest();
+
+            mockMvc.perform(patch("/api/v1/users/nickname")
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                             .contentType(APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))

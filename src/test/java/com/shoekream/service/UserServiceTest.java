@@ -6,6 +6,7 @@ import com.shoekream.domain.cart.Cart;
 import com.shoekream.domain.cart.CartRepository;
 import com.shoekream.domain.user.User;
 import com.shoekream.domain.user.UserRepository;
+import com.shoekream.domain.user.dto.UserChangeNicknameRequest;
 import com.shoekream.domain.user.dto.UserChangePasswordRequest;
 import com.shoekream.domain.user.dto.UserCreateRequest;
 import com.shoekream.domain.user.dto.UserLoginRequest;
@@ -208,5 +209,76 @@ class UserServiceTest {
 
         }
     }
+    @Nested
+    @DisplayName("회원 닉네임 변경 테스트")
+    class UserChangeNickname {
 
+        String email = "email";
+
+        UserChangeNicknameRequest request = new UserChangeNicknameRequest("newNickname");
+
+        @Test
+        @DisplayName("회원 닉네임 변경 성공 테스트")
+        public void success() {
+            given(userRepository.findByEmail(email))
+                    .willReturn(Optional.of(mockUser));
+
+            assertDoesNotThrow(() -> userService.changeNicknameUser(request, email));
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+        }
+
+        @Test
+        @DisplayName("회원 닉네임 변경 실패 테스트 (가입되지 않은 회원인 경우)")
+        public void error1() {
+            when(userRepository.findByEmail(email))
+                    .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
+
+            ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> userService.changeNicknameUser(request, email));
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(USER_NOT_FOUND);
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+
+        }
+
+        @Test
+        @DisplayName("회원 닉네임 변경 실패 테스트 (중복되는 닉네임인 경우)")
+        public void error2() {
+
+            given(userRepository.findByEmail(email))
+                    .willReturn(Optional.of(mockUser));
+
+            when(userRepository.existsByNickname(request.getNickname()))
+                    .thenReturn(true);
+
+            ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> userService.changeNicknameUser(request, email));
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(DUPLICATE_NICKNAME);
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+            verify(userRepository, atLeastOnce()).existsByNickname(request.getNickname());
+
+        }
+
+        @Test
+        @DisplayName("회원 닉네임 변경 실패 테스트 (변경한지 7일이 지나지 않은 경우)")
+        public void error3() {
+
+            given(userRepository.findByEmail(email))
+                    .willReturn(Optional.of(mockUser));
+
+            given(userRepository.existsByNickname(request.getNickname()))
+                    .willReturn(false);
+
+            doThrow(new ShoeKreamException(CHANGE_NOT_ALLOWED))
+                    .when(mockUser).changeNickname(request);
+
+            ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> userService.changeNicknameUser(request, email));
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(CHANGE_NOT_ALLOWED);
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+            verify(userRepository, atLeastOnce()).existsByNickname(request.getNickname());
+            verify(mockUser, atLeastOnce()).changeNickname(request);
+
+        }
+    }
 }
