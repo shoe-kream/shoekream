@@ -108,4 +108,8 @@ public class User extends UserBase {
     public boolean hasPoint() {
         return this.point > 0;
     }
+
+    public void updateAccount(Account account) {
+        this.account = account;
+    }
 }

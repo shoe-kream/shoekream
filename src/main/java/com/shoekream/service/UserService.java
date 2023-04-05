@@ -103,4 +103,13 @@ public class UserService {
 
         return foundUser.toUserResponse();
     }
+
+    public UserResponse updateAccountUser(UserUpdateAccountRequest request, String email) {
+        User foundUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
+
+        foundUser.updateAccount(request.toAccount());
+
+        return foundUser.toUserResponse();
+    }
 }

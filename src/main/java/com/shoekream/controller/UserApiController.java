@@ -52,4 +52,12 @@ public class UserApiController {
 
         return ResponseEntity.ok(Response.success(response));
     }
+
+    @PatchMapping("/account")
+    public ResponseEntity<Response<UserResponse>> updateAccount(Authentication authentication, @Validated @RequestBody UserUpdateAccountRequest request, BindingResult br) {
+        String email = authentication.getName();
+        UserResponse response = userService.updateAccountUser(request, email);
+
+        return ResponseEntity.ok(Response.success(response));
+    }
 }
