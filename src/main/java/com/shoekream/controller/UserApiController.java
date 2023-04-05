@@ -44,4 +44,12 @@ public class UserApiController {
 
         return ResponseEntity.ok(Response.success(response));
     }
+
+    @DeleteMapping
+    public ResponseEntity<Response<UserResponse>> withdraw(Authentication authentication,@Validated @RequestBody UserWithdrawRequest request,BindingResult br) {
+        String email = authentication.getName();
+        UserResponse response = userService.withdrawUser(request,email);
+
+        return ResponseEntity.ok(Response.success(response));
+    }
 }

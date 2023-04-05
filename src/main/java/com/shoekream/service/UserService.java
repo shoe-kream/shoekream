@@ -88,4 +88,15 @@ public class UserService {
 
         return foundUser.toUserResponse();
     }
+
+    public UserResponse withdrawUser(UserWithdrawRequest request,String email) {
+        User foundUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
+
+        foundUser.checkPassword(encoder, request.getPassword());
+
+        userRepository.delete(foundUser);
+
+        return foundUser.toUserResponse();
+    }
 }
