@@ -7,6 +7,7 @@ import com.shoekream.common.config.SecurityConfig;
 import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.common.util.JwtUtil;
+import com.shoekream.domain.user.Account;
 import com.shoekream.domain.user.dto.*;
 import com.shoekream.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -527,6 +528,58 @@ class UserApiControllerTest {
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                             .contentType(APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+
+    }
+
+    @Nested
+    @DisplayName("회원 계좌 조회 등록 테스트")
+    class UserGetAccount{
+        String email = "email";
+
+        String bankName = "bankName";
+        String accountNumber = "accountNumber";
+        String depositor = "depositor";
+
+        Account account = Account.builder()
+                .bankName(bankName)
+                .accountNumber(accountNumber)
+                .depositor(depositor)
+                .build();
+
+        String token = JwtUtil.createToken(email, "ROLE_USER", secretKey, 1000L * 60 * 60);
+
+        @Test
+        @DisplayName("계좌 정보 조회 성공")
+        void success() throws Exception {
+
+            given(userService.getAccountUser(email))
+                    .willReturn(account);
+
+            mockMvc.perform(get("/api/v1/users/account")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("SUCCESS"))
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result.bankName").value(bankName))
+                    .andExpect(jsonPath("$.result.accountNumber").value(accountNumber))
+                    .andExpect(jsonPath("$.result.depositor").value(depositor));
+        }
+
+        @Test
+        @DisplayName("계좌 정보 조회 실패 (가입된 회원이 아닌 경우)")
+        void error1() throws Exception {
+
+            when(userService.getAccountUser(email))
+                    .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
+
+            mockMvc.perform(get("/api/v1/users/account")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                     .andDo(print())
                     .andExpect(jsonPath("$.message").exists())
                     .andExpect(jsonPath("$.message").value("ERROR"))

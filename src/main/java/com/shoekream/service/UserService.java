@@ -4,6 +4,7 @@ package com.shoekream.service;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.domain.cart.Cart;
 import com.shoekream.domain.cart.CartRepository;
+import com.shoekream.domain.user.Account;
 import com.shoekream.domain.user.User;
 import com.shoekream.domain.user.UserRepository;
 import com.shoekream.domain.user.dto.*;
@@ -111,5 +112,12 @@ public class UserService {
         foundUser.updateAccount(request.toAccount());
 
         return foundUser.toUserResponse();
+    }
+
+    public Account getAccountUser(String email) {
+        User foundUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
+
+        return foundUser.getAccount();
     }
 }

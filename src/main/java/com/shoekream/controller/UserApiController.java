@@ -1,6 +1,7 @@
 package com.shoekream.controller;
 
 import com.shoekream.common.Response;
+import com.shoekream.domain.user.Account;
 import com.shoekream.domain.user.dto.*;
 import com.shoekream.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -59,5 +60,13 @@ public class UserApiController {
         UserResponse response = userService.updateAccountUser(request, email);
 
         return ResponseEntity.ok(Response.success(response));
+    }
+
+    @GetMapping("/account")
+    public ResponseEntity<Response<Account>> getAccount(Authentication authentication) {
+        String email = authentication.getName();
+        Account account = userService.getAccountUser(email);
+
+        return ResponseEntity.ok(Response.success(account));
     }
 }

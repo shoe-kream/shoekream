@@ -382,4 +382,35 @@ class UserServiceTest {
         }
 
     }
+
+    @Nested
+    @DisplayName("회원 계좌 정보 조회 테스트")
+    class UserGetAccount {
+
+        String email = "email";
+
+        @Test
+        @DisplayName("회원 계좌 정보 조회 성공 테스트")
+        public void success() {
+            given(userRepository.findByEmail(email))
+                    .willReturn(Optional.of(mockUser));
+
+            assertDoesNotThrow(() -> userService.getAccountUser(email));
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+        }
+
+        @Test
+        @DisplayName("회원 계좌 정보 조회 실패 테스트 (가입되지 않은 회원인 경우)")
+        public void error1() {
+            when(userRepository.findByEmail(email))
+                    .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
+
+            ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> userService.getAccountUser(email));
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(USER_NOT_FOUND);
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+        }
+
+    }
 }
