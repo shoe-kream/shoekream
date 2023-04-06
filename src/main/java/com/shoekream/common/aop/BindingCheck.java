@@ -7,22 +7,25 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindingResult;
 
+import java.util.stream.Stream;
+
 @Aspect
 @Component
 public class BindingCheck {
 
     @Around(value = "execution(* com.shoekream.controller..*.*(..))")
     public Object validAdviceHandler(ProceedingJoinPoint joinPoint) throws Throwable {
-        Object[] args = joinPoint.getArgs();
-        for (Object arg : args) {
-            if (arg instanceof BindingResult) {
-                BindingResult bindingResult = (BindingResult) arg;
-                if (bindingResult.hasErrors()) {
-                    String errorMessage = bindingResult.getFieldError().getDefaultMessage();
+
+        Stream.of(joinPoint.getArgs())
+                .filter(arg -> arg instanceof BindingResult)
+                .map(arg -> (BindingResult) arg)
+                .filter(br -> br.hasErrors())
+                .findAny()
+                .ifPresent((br)->{
+                    String errorMessage = br.getFieldError().getDefaultMessage();
                     throw new BindingException(errorMessage);
-                }
-            }
-        }
+                });
+
         return joinPoint.proceed();
     }
 }

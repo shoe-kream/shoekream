@@ -32,6 +32,11 @@ public class SecurityConfig {
 
                 .and()
                 .authorizeHttpRequests()
+                .requestMatchers(HttpMethod.PATCH,"/api/v1/users/password").authenticated()
+                .requestMatchers(HttpMethod.PATCH,"/api/v1/users/nickname").authenticated()
+                .requestMatchers(HttpMethod.DELETE,"/api/v1/users").authenticated()
+                .requestMatchers(HttpMethod.PATCH,"/api/v1/users/account").authenticated()
+                .requestMatchers(HttpMethod.GET,"/api/v1/users/account").authenticated()
                 .anyRequest().permitAll()
 
                 .and()
