@@ -1,8 +1,11 @@
 package com.shoekream.controller;
 
 import com.shoekream.common.Response;
+import com.shoekream.domain.address.dto.AddressAddRequest;
+import com.shoekream.domain.address.dto.AddressResponse;
 import com.shoekream.domain.user.Account;
 import com.shoekream.domain.user.dto.*;
+import com.shoekream.service.AddressService;
 import com.shoekream.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/users")
 public class UserApiController {
     private final UserService userService;
+    private final AddressService addressService;
 
     @PostMapping
     public ResponseEntity<Response<UserCreateResponse>> create(@Validated @RequestBody UserCreateRequest request, BindingResult br) {
@@ -68,5 +72,13 @@ public class UserApiController {
         Account account = userService.getAccountUser(email);
 
         return ResponseEntity.ok(Response.success(account));
+    }
+
+    @PostMapping("/addresses")
+    public ResponseEntity<Response<AddressResponse>> addAddress(Authentication authentication, @Validated @RequestBody AddressAddRequest request, BindingResult bindingResult) {
+        String email = authentication.getName();
+        AddressResponse response = addressService.addAddress(email, request);
+
+        return ResponseEntity.ok(Response.success(response));
     }
 }

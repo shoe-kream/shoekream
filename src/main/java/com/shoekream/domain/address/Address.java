@@ -1,17 +1,16 @@
 package com.shoekream.domain.address;
 
 import com.shoekream.domain.BaseTimeEntity;
+import com.shoekream.domain.address.dto.AddressResponse;
 import com.shoekream.domain.user.User;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Builder
 public class Address extends BaseTimeEntity {
 
     @Id
@@ -26,4 +25,10 @@ public class Address extends BaseTimeEntity {
     @JoinColumn(name = "USER_ID")
     private User user;
 
+    public AddressResponse toAddressResponse() {
+        return AddressResponse.builder()
+                .addressId(this.id)
+                .address(String.format("%s %s %s", this.addressName, this.roadNameAddress, this.detailedAddress))
+                .build();
+    }
 }
