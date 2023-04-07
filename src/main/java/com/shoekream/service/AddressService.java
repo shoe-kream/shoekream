@@ -9,11 +9,17 @@ import com.shoekream.domain.user.User;
 import com.shoekream.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.shoekream.common.exception.ErrorCode.ADDRESS_NOT_FOUND;
 import static com.shoekream.common.exception.ErrorCode.USER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AddressService {
 
     private final AddressRepository addressRepository;
@@ -26,5 +32,30 @@ public class AddressService {
         Address address = addressRepository.save(request.toEntity(foundUser));
 
         return address.toAddressResponse();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AddressResponse> getAddresses(String email) {
+        User foundUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
+
+        return addressRepository.findAllByUser(foundUser)
+                .stream()
+                .map(Address::toAddressResponse)
+                .collect(Collectors.toList());
+    }
+
+    public AddressResponse deleteAddress(String email, Long addressId) {
+        User foundUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
+
+        Address foundAddress = addressRepository.findById(addressId)
+                .orElseThrow(() -> new ShoeKreamException(ADDRESS_NOT_FOUND));
+
+        foundAddress.checkUser(foundUser);
+
+        addressRepository.delete(foundAddress);
+
+        return foundAddress.toAddressResponse();
     }
 }

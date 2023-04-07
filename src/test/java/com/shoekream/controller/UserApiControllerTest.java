@@ -29,9 +29,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.List;
+
 import static com.shoekream.common.exception.ErrorCode.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -610,6 +611,7 @@ class UserApiControllerTest {
         AddressResponse response = AddressResponse.builder()
                 .address("full address")
                 .addressId(addressId)
+                .addressName("addressName")
                 .build();
 
         String token = JwtUtil.createToken("email", "ROLE_USER", secretKey, 1000L * 60 * 60);
@@ -629,6 +631,7 @@ class UserApiControllerTest {
                     .andExpect(jsonPath("$.message").value("SUCCESS"))
                     .andExpect(jsonPath("$.result").exists())
                     .andExpect(jsonPath("$.result.addressId").value(addressId))
+                    .andExpect(jsonPath("$.result.address").value("full address"))
                     .andExpect(jsonPath("$.result.address").value("full address"));
         }
 
@@ -643,6 +646,128 @@ class UserApiControllerTest {
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                             .contentType(APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 주소 조회")
+    class UserGetAddress{
+        Long addressId = 1L;
+
+        AddressResponse response = AddressResponse.builder()
+                .address("full address")
+                .addressId(addressId)
+                .addressName("addressName")
+                .build();
+
+        String token = JwtUtil.createToken("email", "ROLE_USER", secretKey, 1000L * 60 * 60);
+        @Test
+        @DisplayName("회원 주소 조회 성공")
+        void success() throws Exception {
+
+            given(addressService.getAddresses(anyString()))
+                    .willReturn(List.of(response));
+
+            mockMvc.perform(get("/api/v1/users/addresses")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("SUCCESS"))
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result[0].addressId").value(addressId))
+                    .andExpect(jsonPath("$.result[0].addressName").value("addressName"))
+                    .andExpect(jsonPath("$.result[0].address").value("full address"));
+        }
+
+        @Test
+        @DisplayName("회원 주소 조회 실패 (가입된 회원이 아닌 경우)")
+        void error() throws Exception {
+
+            when(addressService.getAddresses(anyString()))
+                    .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
+
+            mockMvc.perform(get("/api/v1/users/addresses")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 주소 삭제")
+    class UserDeleteAddress{
+        Long addressId = 1L;
+
+        AddressResponse response = AddressResponse.builder()
+                .address("full address")
+                .addressId(addressId)
+                .addressName("addressName")
+                .build();
+
+        String token = JwtUtil.createToken("email", "ROLE_USER", secretKey, 1000L * 60 * 60);
+        @Test
+        @DisplayName("회원 주소 삭제 성공")
+        void success() throws Exception {
+
+            given(addressService.deleteAddress(anyString(),anyLong()))
+                    .willReturn(response);
+
+            mockMvc.perform(delete("/api/v1/users/addresses/"+addressId)
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("SUCCESS"))
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result.addressId").value(addressId))
+                    .andExpect(jsonPath("$.result.addressName").value("addressName"))
+                    .andExpect(jsonPath("$.result.address").value("full address"));
+        }
+
+        @Test
+        @DisplayName("회원 주소 삭제 실패 (가입된 회원이 아닌 경우)")
+        void error() throws Exception {
+
+            when(addressService.deleteAddress(anyString(),anyLong()))
+                    .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
+
+            mockMvc.perform(delete("/api/v1/users/addresses/"+addressId)
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+
+        @Test
+        @DisplayName("회원 주소 삭제 실패 (삭제할 주소가 존재하지 않는 경우)")
+        void error2() throws Exception {
+
+            when(addressService.deleteAddress(anyString(),anyLong()))
+                    .thenThrow(new ShoeKreamException(ADDRESS_NOT_FOUND));
+
+            mockMvc.perform(delete("/api/v1/users/addresses/"+addressId)
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+
+        @Test
+        @DisplayName("회원 주소 삭제 실패 (비밀번호가 일치하지 않는 경우)")
+        void error3() throws Exception {
+
+            when(addressService.deleteAddress(anyString(),anyLong()))
+                    .thenThrow(new ShoeKreamException(WRONG_PASSWORD));
+
+            mockMvc.perform(delete("/api/v1/users/addresses/"+addressId)
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                     .andDo(print())
                     .andExpect(jsonPath("$.message").exists())
                     .andExpect(jsonPath("$.message").value("ERROR"))

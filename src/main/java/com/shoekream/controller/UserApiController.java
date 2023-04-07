@@ -15,6 +15,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
@@ -78,6 +80,22 @@ public class UserApiController {
     public ResponseEntity<Response<AddressResponse>> addAddress(Authentication authentication, @Validated @RequestBody AddressAddRequest request, BindingResult bindingResult) {
         String email = authentication.getName();
         AddressResponse response = addressService.addAddress(email, request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(Response.success(response));
+    }
+
+    @GetMapping("/addresses")
+    public ResponseEntity<Response<List<AddressResponse>>> getAddresses(Authentication authentication) {
+        String email = authentication.getName();
+        List<AddressResponse> response = addressService.getAddresses(email);
+
+        return ResponseEntity.ok(Response.success(response));
+    }
+
+    @DeleteMapping("/addresses/{addressId}")
+    public ResponseEntity<Response<AddressResponse>> deleteAddress(@PathVariable(name = "addressId") Long addressId, Authentication authentication) {
+        String email = authentication.getName();
+        AddressResponse response = addressService.deleteAddress(email, addressId);
 
         return ResponseEntity.ok(Response.success(response));
     }
