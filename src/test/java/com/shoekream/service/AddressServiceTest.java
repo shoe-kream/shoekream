@@ -1,18 +1,15 @@
 package com.shoekream.service;
 
-import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.domain.address.Address;
 import com.shoekream.domain.address.AddressRepository;
-import com.shoekream.domain.address.dto.AddressAddRequest;
+import com.shoekream.domain.address.dto.AddressRequest;
 import com.shoekream.domain.user.User;
 import com.shoekream.domain.user.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
-import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -48,7 +45,7 @@ class AddressServiceTest {
 
         String email = "email";
 
-        AddressAddRequest request = AddressAddRequest.builder()
+        AddressRequest request = AddressRequest.builder()
                 .addressName("addressName")
                 .roadNameAddress("roadNameAddress")
                 .detailedAddress("detailedAddress")
@@ -180,6 +177,86 @@ class AddressServiceTest {
                     .when(mockAddress).checkUser(mockUser);
 
             ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> addressService.deleteAddress(email,addressId));
+
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(USER_NOT_MATCH);
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+            verify(addressRepository, atLeastOnce()).findById(addressId);
+
+        }
+    }
+
+    @Nested
+    @DisplayName("주소 수정 테스트")
+    class UpdateAddress {
+
+        String email = "email";
+        Long addressId = 1L;
+
+        AddressRequest request = AddressRequest.builder()
+                .addressName("addressName")
+                .roadNameAddress("roadNameAddress")
+                .detailedAddress("detailedAddress")
+                .postalCode("postalCode")
+                .build();
+
+        @Test
+        @DisplayName("주소 수정 성공")
+        void success() {
+            given(userRepository.findByEmail(email))
+                    .willReturn(Optional.of(mockUser));
+            given(addressRepository.findById(addressId))
+                    .willReturn(Optional.of(mockAddress));
+
+            assertDoesNotThrow(() -> addressService.updateAddress(email, addressId, request));
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+            verify(addressRepository, atLeastOnce()).findById(addressId);
+        }
+
+        @Test
+        @DisplayName("주소 수정 실패 (가입된 회원이 아닌 경우) ")
+        void error() {
+            when(userRepository.findByEmail(email))
+                    .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
+
+            ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> addressService.updateAddress(email, addressId, request));
+
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(USER_NOT_FOUND);
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+        }
+
+        @Test
+        @DisplayName("주소 삭제 실패 (주소를 찾을 수 없는 경우)")
+        void error2() {
+            given(userRepository.findByEmail(email))
+                    .willReturn(Optional.of(mockUser));
+
+            when(addressRepository.findById(addressId))
+                    .thenThrow(new ShoeKreamException(ADDRESS_NOT_FOUND));
+
+            ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> addressService.updateAddress(email, addressId, request));
+
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(ADDRESS_NOT_FOUND);
+
+            verify(userRepository, atLeastOnce()).findByEmail(email);
+            verify(addressRepository, atLeastOnce()).findById(addressId);
+
+        }
+
+        @Test
+        @DisplayName("주소 삭제 실패 (본인이 요청안한 경우)")
+        void error3() {
+            given(userRepository.findByEmail(email))
+                    .willReturn(Optional.of(mockUser));
+            given(addressRepository.findById(addressId))
+                    .willReturn(Optional.of(mockAddress));
+
+            doThrow(new ShoeKreamException(USER_NOT_MATCH))
+                    .when(mockAddress).checkUser(mockUser);
+
+            ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> addressService.updateAddress(email, addressId, request));
 
             assertThat(shoeKreamException.getErrorCode()).isEqualTo(USER_NOT_MATCH);
 

@@ -3,6 +3,7 @@ package com.shoekream.domain.address;
 import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.domain.BaseTimeEntity;
+import com.shoekream.domain.address.dto.AddressRequest;
 import com.shoekream.domain.address.dto.AddressResponse;
 import com.shoekream.domain.user.User;
 import jakarta.persistence.*;
@@ -39,5 +40,11 @@ public class Address extends BaseTimeEntity {
         if (!this.user.equals(user)) {
             throw new ShoeKreamException(ErrorCode.USER_NOT_MATCH);
         }
+    }
+
+    public void update(AddressRequest request) {
+        this.addressName = request.getAddressName();
+        this.roadNameAddress = request.getRoadNameAddress();
+        this.detailedAddress = request.getDetailedAddress();
     }
 }

@@ -1,7 +1,7 @@
 package com.shoekream.controller;
 
 import com.shoekream.common.Response;
-import com.shoekream.domain.address.dto.AddressAddRequest;
+import com.shoekream.domain.address.dto.AddressRequest;
 import com.shoekream.domain.address.dto.AddressResponse;
 import com.shoekream.domain.user.Account;
 import com.shoekream.domain.user.dto.*;
@@ -77,7 +77,7 @@ public class UserApiController {
     }
 
     @PostMapping("/addresses")
-    public ResponseEntity<Response<AddressResponse>> addAddress(Authentication authentication, @Validated @RequestBody AddressAddRequest request, BindingResult bindingResult) {
+    public ResponseEntity<Response<AddressResponse>> addAddress(Authentication authentication, @Validated @RequestBody AddressRequest request, BindingResult bindingResult) {
         String email = authentication.getName();
         AddressResponse response = addressService.addAddress(email, request);
 
@@ -96,6 +96,14 @@ public class UserApiController {
     public ResponseEntity<Response<AddressResponse>> deleteAddress(@PathVariable(name = "addressId") Long addressId, Authentication authentication) {
         String email = authentication.getName();
         AddressResponse response = addressService.deleteAddress(email, addressId);
+
+        return ResponseEntity.ok(Response.success(response));
+    }
+
+    @PatchMapping("/addresses/{addressId}")
+    public ResponseEntity<Response<AddressResponse>> updateAddress(@PathVariable(name = "addressId") Long addressId, Authentication authentication, @Validated @RequestBody AddressRequest request, BindingResult bindingResult) {
+        String email = authentication.getName();
+        AddressResponse response = addressService.updateAddress(email, addressId, request);
 
         return ResponseEntity.ok(Response.success(response));
     }

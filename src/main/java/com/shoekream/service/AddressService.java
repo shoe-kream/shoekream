@@ -3,7 +3,7 @@ package com.shoekream.service;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.domain.address.Address;
 import com.shoekream.domain.address.AddressRepository;
-import com.shoekream.domain.address.dto.AddressAddRequest;
+import com.shoekream.domain.address.dto.AddressRequest;
 import com.shoekream.domain.address.dto.AddressResponse;
 import com.shoekream.domain.user.User;
 import com.shoekream.domain.user.UserRepository;
@@ -25,7 +25,7 @@ public class AddressService {
     private final AddressRepository addressRepository;
     private final UserRepository userRepository;
 
-    public AddressResponse addAddress(String email, AddressAddRequest request) {
+    public AddressResponse addAddress(String email, AddressRequest request) {
         User foundUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
 
@@ -55,6 +55,20 @@ public class AddressService {
         foundAddress.checkUser(foundUser);
 
         addressRepository.delete(foundAddress);
+
+        return foundAddress.toAddressResponse();
+    }
+
+    public AddressResponse updateAddress(String email, Long addressId, AddressRequest request) {
+        User foundUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
+
+        Address foundAddress = addressRepository.findById(addressId)
+                .orElseThrow(() -> new ShoeKreamException(ADDRESS_NOT_FOUND));
+
+        foundAddress.checkUser(foundUser);
+
+        foundAddress.update(request);
 
         return foundAddress.toAddressResponse();
     }

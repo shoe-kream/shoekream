@@ -1,13 +1,12 @@
 package com.shoekream.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shoekream.common.aop.BindingCheck;
 import com.shoekream.common.config.SecurityConfig;
 import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.common.util.JwtUtil;
-import com.shoekream.domain.address.dto.AddressAddRequest;
+import com.shoekream.domain.address.dto.AddressRequest;
 import com.shoekream.domain.address.dto.AddressResponse;
 import com.shoekream.domain.user.Account;
 import com.shoekream.domain.user.dto.*;
@@ -601,7 +600,7 @@ class UserApiControllerTest {
     @DisplayName("회원 주소 추가")
     class UserAddAddress{
         Long addressId = 1L;
-        AddressAddRequest request = AddressAddRequest.builder()
+        AddressRequest request = AddressRequest.builder()
                 .addressName("addressName")
                 .roadNameAddress("roadNameAddress")
                 .detailedAddress("detailedAddress")
@@ -619,7 +618,7 @@ class UserApiControllerTest {
         @DisplayName("회원 주소 등록 성공")
         void success() throws Exception {
 
-            given(addressService.addAddress(anyString(), any(AddressAddRequest.class)))
+            given(addressService.addAddress(anyString(), any(AddressRequest.class)))
                     .willReturn(response);
 
             mockMvc.perform(post("/api/v1/users/addresses")
@@ -639,7 +638,7 @@ class UserApiControllerTest {
         @DisplayName("회원 주소 등록 실패 (가입된 회원이 아닌 경우)")
         void error() throws Exception {
 
-            when(addressService.addAddress(anyString(), any(AddressAddRequest.class)))
+            when(addressService.addAddress(anyString(), any(AddressRequest.class)))
                     .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
 
             mockMvc.perform(post("/api/v1/users/addresses")
@@ -773,5 +772,62 @@ class UserApiControllerTest {
                     .andExpect(jsonPath("$.message").value("ERROR"))
                     .andExpect(jsonPath("$.result").exists());
         }
+    }
+
+    @Nested
+    @DisplayName("회원 주소 수정")
+    class UserUpdateAddress{
+        Long addressId = 1L;
+
+        AddressRequest request = AddressRequest.builder()
+                .addressName("addressName")
+                .roadNameAddress("roadNameAddress")
+                .detailedAddress("detailedAddress")
+                .postalCode("postalCode")
+                .build();
+        AddressResponse response = AddressResponse.builder()
+                .address("full address")
+                .addressId(addressId)
+                .addressName("addressName")
+                .build();
+
+        String token = JwtUtil.createToken("email", "ROLE_USER", secretKey, 1000L * 60 * 60);
+        @Test
+        @DisplayName("회원 주소 수정 성공")
+        void success() throws Exception {
+
+            given(addressService.updateAddress(anyString(),anyLong(),any(AddressRequest.class)))
+                    .willReturn(response);
+
+            mockMvc.perform(patch("/api/v1/users/addresses/"+addressId)
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("SUCCESS"))
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result.addressId").value(addressId))
+                    .andExpect(jsonPath("$.result.addressName").value("addressName"))
+                    .andExpect(jsonPath("$.result.address").value("full address"));
+        }
+
+        @Test
+        @DisplayName("회원 주소 수정 실패 (가입된 회원이 아닌 경우)")
+        void error() throws Exception {
+
+            when(addressService.updateAddress(anyString(),anyLong(),any(AddressRequest.class)))
+                    .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
+
+            mockMvc.perform(patch("/api/v1/users/addresses/"+addressId)
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+
     }
 }

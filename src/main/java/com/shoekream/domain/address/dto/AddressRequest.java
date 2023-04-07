@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 @Builder
-public class AddressAddRequest {
+public class AddressRequest {
     @NotBlank(message = "주소 이름은 필수 입력 항목입니다.")
     private String addressName;
     @NotBlank(message = "도로명 주소는 필수 입력 항목입니다.")
