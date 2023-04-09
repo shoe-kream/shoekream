@@ -1,15 +1,16 @@
 package com.shoekream.domain.point;
 
 import com.shoekream.domain.BaseTimeEntity;
+import com.shoekream.domain.point.dto.PointHistoryResponse;
 import com.shoekream.domain.user.User;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Builder
+@AllArgsConstructor
 public class Point extends BaseTimeEntity {
 
     @Id
@@ -24,4 +25,11 @@ public class Point extends BaseTimeEntity {
     private PointDivision division;
 
     private Long amount;
+
+    public PointHistoryResponse toPointHistoryResponse() {
+        return PointHistoryResponse.builder()
+                .time(this.getCreatedDate())
+                .amount(this.amount)
+                .build();
+    }
 }
