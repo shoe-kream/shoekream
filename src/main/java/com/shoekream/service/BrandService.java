@@ -7,6 +7,8 @@ import com.shoekream.domain.brand.BrandRepository;
 import com.shoekream.domain.brand.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,11 +28,13 @@ public class BrandService {
                 .toBrandInfo();
     }
 
+    @Cacheable(value = "brands")
     public List<BrandInfo> getBrandInfos() {
         return brandRepository.findAll().stream()
                 .map(Brand::toBrandInfo)
                 .toList();
     }
+
 
     public BrandCreateResponse saveBrand(BrandCreateRequest requestDto) {
 
@@ -48,6 +52,7 @@ public class BrandService {
         }
     }
 
+    @CacheEvict(value = "brands", allEntries = true)
     public BrandDeleteResponse deleteBrand(Long id) {
 
         Brand brand = brandRepository.findById(id).orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
@@ -57,6 +62,7 @@ public class BrandService {
         return brand.toBrandDeleteResponse();
     }
 
+    @CacheEvict(value = "brands", allEntries = true)
     public BrandUpdateResponse updateBrand(Long id, BrandUpdateRequest updatedBrand) {
 
         Brand savedBrand = brandRepository.findById(id).orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
