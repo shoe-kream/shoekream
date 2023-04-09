@@ -46,9 +46,7 @@ public class PointService {
 
         pointRepository.save(requestDto.toEntity(foundUser));
 
-        return PointResponse.builder()
-                .remainingPoint(foundUser.getPoint())
-                .build();
+        return foundUser.toPointResponse();
 
     }
 
