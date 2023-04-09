@@ -9,6 +9,8 @@ import com.shoekream.domain.product.ProductRepository;
 import com.shoekream.domain.product.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,16 +34,15 @@ public class ProductService {
         return savedProduct.toProductCreateResponse();
     }
 
-
-
     @Transactional(readOnly = true)
+    @Cacheable(value = "products", key ="#id")
     public ProductInfo getProductInfo(Long id) {
-
         return productRepository.findById(id)
                 .orElseThrow(() -> new ShoeKreamException(ErrorCode.PRODUCT_NOT_FOUND))
                 .toProductInfo();
     }
 
+    @CacheEvict(value = "products", key = "#id")
     public ProductDeleteResponse deleteProduct(Long id) {
 
         Product product = validateProductExists(id);
@@ -51,6 +52,7 @@ public class ProductService {
         return product.toProductDeleteResponse();
     }
 
+    @CacheEvict(value = "products", key = "#id")
     public ProductUpdateResponse updateProduct(Long id, ProductUpdateRequest updatedProduct) {
 
         brandRepository.findById(updatedProduct.getBrandId())
