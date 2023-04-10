@@ -341,7 +341,7 @@ class UserServiceTest {
                     .thenReturn(true);
 
             ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> userService.withdrawUser(request, email));
-            assertThat(shoeKreamException.getErrorCode()).isEqualTo(WITHDRAWAL_NOT_ALLOWED_POINT);
+            assertThat(shoeKreamException.getErrorCode()).isEqualTo(WITHDRAWAL_NOT_ALLOWED);
 
             verify(userRepository, atLeastOnce()).findByEmail(email);
             verify(mockUser, atLeastOnce()).checkPassword(encoder, request.getPassword());

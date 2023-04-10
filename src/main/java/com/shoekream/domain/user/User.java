@@ -5,6 +5,7 @@ import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.common.util.JwtUtil;
 import com.shoekream.domain.cart.Cart;
 import com.shoekream.domain.point.Point;
+import com.shoekream.domain.point.dto.PointResponse;
 import com.shoekream.domain.user.dto.UserChangeNicknameRequest;
 import com.shoekream.domain.user.dto.UserCreateResponse;
 import com.shoekream.domain.user.dto.UserResponse;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.shoekream.common.exception.ErrorCode.*;
 import static com.shoekream.common.util.constants.JwtConstants.*;
 
 @Getter
@@ -74,7 +76,7 @@ public class User extends UserBase {
 
     public void checkPassword(BCryptPasswordEncoder encoder, String inputPassword) {
         if (!encoder.matches(inputPassword, this.password)) {
-            throw new ShoeKreamException(ErrorCode.WRONG_PASSWORD);
+            throw new ShoeKreamException(WRONG_PASSWORD);
         }
     }
 
@@ -95,7 +97,7 @@ public class User extends UserBase {
 
     public void changeNickname(UserChangeNicknameRequest request) {
         if(!canChangeNickname()){
-            throw new ShoeKreamException(ErrorCode.CHANGE_NOT_ALLOWED);
+            throw new ShoeKreamException(CHANGE_NOT_ALLOWED);
         }
         this.nickname = request.getNickname();
         this.nicknameModifiedDate = LocalDateTime.now();
@@ -111,5 +113,23 @@ public class User extends UserBase {
 
     public void updateAccount(Account account) {
         this.account = account;
+    }
+
+    public void chargePoint(Long amount) {
+        this.point += amount;
+    }
+
+    public void withdrawalPoint(Long withdrawalAmount) {
+        if (this.point < withdrawalAmount) {
+            throw new ShoeKreamException(NOT_ALLOWED_WITHDRAWAL_POINT);
+        }
+        this.point -= withdrawalAmount;
+    }
+
+    public PointResponse toPointResponse() {
+
+        return PointResponse.builder()
+                .remainingPoint(this.point)
+                .build();
     }
 }

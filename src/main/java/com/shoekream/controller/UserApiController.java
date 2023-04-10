@@ -3,9 +3,15 @@ package com.shoekream.controller;
 import com.shoekream.common.Response;
 import com.shoekream.domain.address.dto.AddressRequest;
 import com.shoekream.domain.address.dto.AddressResponse;
+import com.shoekream.domain.point.PointDivision;
+import com.shoekream.domain.point.dto.PointChargeRequest;
+import com.shoekream.domain.point.dto.PointHistoryResponse;
+import com.shoekream.domain.point.dto.PointResponse;
+import com.shoekream.domain.point.dto.PointWithdrawalRequest;
 import com.shoekream.domain.user.Account;
 import com.shoekream.domain.user.dto.*;
 import com.shoekream.service.AddressService;
+import com.shoekream.service.PointService;
 import com.shoekream.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,12 +23,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.shoekream.domain.point.PointDivision.*;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
 public class UserApiController {
     private final UserService userService;
     private final AddressService addressService;
+    private final PointService pointService;
+
 
     @PostMapping
     public ResponseEntity<Response<UserCreateResponse>> create(@Validated @RequestBody UserCreateRequest request, BindingResult br) {
@@ -105,6 +115,36 @@ public class UserApiController {
         String email = authentication.getName();
         AddressResponse response = addressService.updateAddress(email, addressId, request);
 
+        return ResponseEntity.ok(Response.success(response));
+    }
+
+    @GetMapping("/points")
+    public ResponseEntity<Response<Long>> get(Authentication authentication) {
+        Long response = pointService.getUserPoint(authentication.getName());
+        return ResponseEntity.ok(Response.success(response));
+    }
+
+    @PostMapping("/points/charge")
+    public ResponseEntity<Response<PointResponse>> charge(Authentication authentication, @Validated @RequestBody PointChargeRequest requestDto, BindingResult br) {
+        PointResponse response = pointService.chargePoint(authentication.getName(), requestDto);
+        return ResponseEntity.ok(Response.success(response));
+    }
+
+    @PostMapping("/points/withdrawal")
+    public ResponseEntity<Response<PointResponse>> withdrawal(Authentication authentication, @Validated @RequestBody PointWithdrawalRequest requestDto, BindingResult br) {
+        PointResponse response = pointService.withdrawalPoint(authentication.getName(), requestDto);
+        return ResponseEntity.ok(Response.success(response));
+    }
+
+    @GetMapping("/points/charge-history")
+    public ResponseEntity<Response<List<PointHistoryResponse>>> getChargeHistory(Authentication authentication) {
+        List<PointHistoryResponse> response = pointService.getHistoryPointByDivision(authentication.getName(), POINT_CHARGE);
+        return ResponseEntity.ok(Response.success(response));
+    }
+
+    @GetMapping("/points/withdrawal-history")
+    public ResponseEntity<Response<List<PointHistoryResponse>>> getWithdrawalHistory(Authentication authentication) {
+        List<PointHistoryResponse> response = pointService.getHistoryPointByDivision(authentication.getName(), POINT_WITHDRAW);
         return ResponseEntity.ok(Response.success(response));
     }
 }
