@@ -2,6 +2,7 @@ package com.shoekream.service;
 
 import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
+import com.shoekream.common.util.AwsS3Service;
 import com.shoekream.domain.brand.Brand;
 import com.shoekream.domain.brand.BrandRepository;
 import com.shoekream.domain.product.Product;
@@ -13,6 +14,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -22,12 +24,16 @@ public class ProductService {
 
     private final BrandRepository brandRepository;
     private final ProductRepository productRepository;
+    private final AwsS3Service awsS3Service;
 
-    public ProductCreateResponse saveProduct(ProductCreateRequest requestDto) {
+    public ProductCreateResponse saveProduct(ProductCreateRequest requestDto, MultipartFile file) {
 
         Brand savedBrand = validateBrandExists(requestDto);
 
         isExistsProduct(requestDto.getName(), requestDto.getModelNumber());
+
+        String originImageUrl = awsS3Service.uploadProductOriginImage(file);
+        requestDto.setOriginImagePath(originImageUrl);
 
         Product savedProduct = productRepository.save(Product.createProduct(requestDto,savedBrand));
 

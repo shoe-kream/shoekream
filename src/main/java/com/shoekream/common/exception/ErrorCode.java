@@ -23,7 +23,10 @@ public enum ErrorCode {
 
     CHANGE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "닉네임은 7일에 한번 변경할 수 있습니다."),
     WITHDRAWAL_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "잔여 포인트가 남아있어 탈퇴할 수 없습니다."),
-    NOT_ALLOWED_WITHDRAWAL_POINT(HttpStatus.BAD_REQUEST, "보유하신 포인트보다 많이 출금할 수 없습니다.");
+    NOT_ALLOWED_WITHDRAWAL_POINT(HttpStatus.BAD_REQUEST, "보유하신 포인트보다 많이 출금할 수 없습니다."),
+
+    WRONG_FILE_FORMAT(HttpStatus.BAD_REQUEST, "잘못된 형식의 파일입니다"),
+    FILE_UPLOAD_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
 
     private HttpStatus httpStatus;
     private String message;

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -20,8 +21,10 @@ public class ProductApiController {
     private final ProductService productService;
 
     @PostMapping("")
-    public ResponseEntity<Response<ProductCreateResponse>> createProduct(@Validated @RequestBody ProductCreateRequest requestDto, BindingResult br) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(Response.success(productService.saveProduct(requestDto)));
+    public ResponseEntity<Response<ProductCreateResponse>> createProduct(@Validated @RequestPart ProductCreateRequest requestDto,
+                                                                         @RequestPart MultipartFile multipartFile,
+                                                                         BindingResult br) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(Response.success(productService.saveProduct(requestDto, multipartFile)));
     }
 
     @GetMapping("/{id}")
