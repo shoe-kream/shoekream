@@ -3,6 +3,7 @@ package com.shoekream.service;
 import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.common.util.AwsS3Service;
+import com.shoekream.common.util.FileUtil;
 import com.shoekream.domain.brand.Brand;
 import com.shoekream.domain.brand.BrandRepository;
 import com.shoekream.domain.product.Product;
@@ -53,10 +54,26 @@ public class ProductService {
 
         Product product = validateProductExists(id);
 
+        // 상품 이미지 전체 url 조회
+        String originImagePath = product.getOriginImagePath();
+
+        // 이미지 url에서 파일 이름만 추출
+        String fileName = FileUtil.getFileName(originImagePath);
+
+        // S3에서 상품 이미지 삭제
+        awsS3Service.deleteProductImage(fileName);
+
+        // 상품 삭제
         productRepository.delete(product);
 
         return product.toProductDeleteResponse();
     }
+
+    //3. 기존 상품 이미지 유지 or 기존 상품 이미지 변경하는 경우
+    //    → 기존 상품 이미지 삭제하고, 업데이트 될 이미지 url 초기화
+    //4. 새로운 상품 이미지 등록
+    //   4-1. 원본 이미지 저장(s3)
+    //   4-2. 썸네일용, 리사이즈용 이미지 url로 변경하고 저장
 
     @CacheEvict(value = "products", key = "#id")
     public ProductUpdateResponse updateProduct(Long id, ProductUpdateRequest updatedProduct) {

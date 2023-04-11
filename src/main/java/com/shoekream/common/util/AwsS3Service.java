@@ -2,6 +2,7 @@ package com.shoekream.common.util;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.shoekream.common.exception.ErrorCode;
@@ -56,6 +57,21 @@ public class AwsS3Service {
 
         return storedFileUrl;
     }
+
+    public void deleteProductImage(String originImageUrl) {
+        delete("product/" + originImageUrl);
+
+    }
+
+    public void deleteBrandImage(String originImageUrl) {
+        delete("brand/" + originImageUrl);
+
+    }
+
+    public void delete(String filePath) {
+        amazonS3Client.deleteObject(new DeleteObjectRequest(bucket, filePath));
+    }
+
 
 
 }

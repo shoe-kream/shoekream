@@ -34,4 +34,10 @@ public class FileUtil {
         return folder + "/" + storedFileName;
     }
 
+    // 이미지 파일 이름만 추출(디렉토리까진 추출x)
+    public static String getFileName(String path) {
+        int idx = path.lastIndexOf("/");
+
+        return path.substring(idx + 1);
+    }
 }

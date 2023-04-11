@@ -3,6 +3,7 @@ package com.shoekream.service;
 import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.common.util.AwsS3Service;
+import com.shoekream.common.util.FileUtil;
 import com.shoekream.domain.brand.Brand;
 import com.shoekream.domain.brand.BrandRepository;
 import com.shoekream.domain.brand.dto.*;
@@ -62,6 +63,16 @@ public class BrandService {
 
         Brand brand = brandRepository.findById(id).orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
 
+        // 브랜드 이미지 전체 url 조회
+        String originImagePath = brand.getOriginImagePath();
+
+        // 이미지 url에서 파일 이름만 추출
+        String fileName = FileUtil.getFileName(originImagePath);
+
+        // S3에서 브랜드 이미지 삭제
+        awsS3Service.deleteBrandImage(fileName);
+
+        // 브랜드 삭제
         brandRepository.deleteById(id);
 
         return brand.toBrandDeleteResponse();
