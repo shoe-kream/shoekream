@@ -38,8 +38,11 @@ public class ProductApiController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Response<ProductUpdateResponse>> updateProduct(@PathVariable Long id, @Validated @RequestBody ProductUpdateRequest requestDto, BindingResult br) {
-        return ResponseEntity.status(HttpStatus.OK).body(Response.success(productService.updateProduct(id, requestDto)));
+    public ResponseEntity<Response<ProductUpdateResponse>> updateProduct(@PathVariable Long id,
+                                                                         @Validated @RequestPart ProductUpdateRequest requestDto,
+                                                                         @RequestPart(required = false) MultipartFile multipartFile,
+                                                                         BindingResult br) {
+        return ResponseEntity.status(HttpStatus.OK).body(Response.success(productService.updateProduct(id, requestDto, multipartFile)));
     }
 }
 

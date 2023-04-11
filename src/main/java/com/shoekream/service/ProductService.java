@@ -27,13 +27,13 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final AwsS3Service awsS3Service;
 
-    public ProductCreateResponse saveProduct(ProductCreateRequest requestDto, MultipartFile file) {
+    public ProductCreateResponse saveProduct(ProductCreateRequest requestDto, MultipartFile image) {
 
         Brand savedBrand = validateBrandExists(requestDto);
 
         isExistsProduct(requestDto.getName(), requestDto.getModelNumber());
 
-        String originImageUrl = awsS3Service.uploadProductOriginImage(file);
+        String originImageUrl = awsS3Service.uploadProductOriginImage(image);
         requestDto.setOriginImagePath(originImageUrl);
 
         Product savedProduct = productRepository.save(Product.createProduct(requestDto,savedBrand));
@@ -76,7 +76,7 @@ public class ProductService {
     //   4-2. 썸네일용, 리사이즈용 이미지 url로 변경하고 저장
 
     @CacheEvict(value = "products", key = "#id")
-    public ProductUpdateResponse updateProduct(Long id, ProductUpdateRequest updatedProduct) {
+    public ProductUpdateResponse updateProduct(Long id, ProductUpdateRequest updatedProduct, MultipartFile newImage) {
 
         brandRepository.findById(updatedProduct.getBrandId())
                 .orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
@@ -84,6 +84,18 @@ public class ProductService {
         Product savedProduct = validateProductExists(id);
 
         checkDuplicatedUpdateProduct(updatedProduct, savedProduct);
+
+        // 요청에 새로운 이미지가 들어온 경우
+        if(newImage != null) {
+            String originImagePath = savedProduct.getOriginImagePath();
+            String originFileName = FileUtil.getFileName(originImagePath);
+            awsS3Service.deleteProductImage(originFileName);
+
+            String newImageUrl = awsS3Service.uploadProductOriginImage(newImage);
+            updatedProduct.setOriginImagePath(newImageUrl);
+        } else {
+            updatedProduct.setOriginImagePath(savedProduct.getOriginImagePath());
+        }
 
         savedProduct.update(updatedProduct);
 
