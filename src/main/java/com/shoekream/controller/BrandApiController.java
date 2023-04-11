@@ -60,8 +60,11 @@ public class BrandApiController {
      * 브랜드 수정
      */
     @PatchMapping("/{id}")
-    public ResponseEntity<Response<BrandUpdateResponse>> updateBrand(@PathVariable Long id, @Valid @RequestBody BrandUpdateRequest requestDto) {
-        return ResponseEntity.ok().body(Response.success(brandService.updateBrand(id, requestDto)));
+    public ResponseEntity<Response<BrandUpdateResponse>> updateBrand(@PathVariable Long id,
+                                                                     @Valid @RequestPart BrandUpdateRequest requestDto,
+                                                                     @RequestPart(required = false) MultipartFile multipartFile,
+                                                                     BindingResult br) {
+        return ResponseEntity.ok().body(Response.success(brandService.updateBrand(id, requestDto, multipartFile)));
     }
 
 

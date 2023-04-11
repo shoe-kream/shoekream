@@ -23,4 +23,8 @@ public class BrandUpdateRequest {
                 .thumbnailImagePath(this.thumbnailImagePath)
                 .build();
     }
+
+    public void setOriginImagePath(String newImageUrl) {
+        this.originImagePath = newImageUrl;
+    }
 }
