@@ -27,6 +27,10 @@ public class AwsS3Service {
         return upload(file, bucket, "product");
     }
 
+    public String uploadBrandOriginImage(MultipartFile file) {
+        return upload(file, bucket, "brand");
+    }
+
     public String upload(MultipartFile file, String bucket, String folder) {
 
         ObjectMetadata objectMetadata = new ObjectMetadata();

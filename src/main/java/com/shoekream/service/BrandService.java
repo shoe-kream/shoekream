@@ -42,7 +42,7 @@ public class BrandService {
 
         checkDuplicatedBrandName(requestDto);
 
-        String originImageUrl = awsS3Service.uploadProductOriginImage(file);
+        String originImageUrl = awsS3Service.uploadBrandOriginImage(file);
         requestDto.setOriginImagePath(originImageUrl);
 
         Brand savedBrand = brandRepository.save(requestDto.toEntity());
