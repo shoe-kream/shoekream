@@ -85,15 +85,16 @@ public class ProductService {
 
         checkDuplicatedUpdateProduct(updatedProduct, savedProduct);
 
-        // 요청에 새로운 이미지가 들어온 경우
+        // 요청에 새로운 이미지가 포함된 경우
         if(newImage != null) {
             String originImagePath = savedProduct.getOriginImagePath();
             String originFileName = FileUtil.getFileName(originImagePath);
             awsS3Service.deleteProductImage(originFileName);
 
+            //새로운 이미지 등록
             String newImageUrl = awsS3Service.uploadProductOriginImage(newImage);
             updatedProduct.setOriginImagePath(newImageUrl);
-        } else {
+        } else { // 요청에 이미지 포함되지 않은 경우
             updatedProduct.setOriginImagePath(savedProduct.getOriginImagePath());
         }
 
