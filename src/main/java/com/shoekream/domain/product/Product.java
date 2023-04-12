@@ -149,6 +149,7 @@ public class Product extends BaseTimeEntity {
                 .minSize(this.minSize)
                 .maxSize(this.maxSize)
                 .brandName(this.brand.getName())
+                .originImagePath(this.originImagePath)
                 .build();
     }
 }

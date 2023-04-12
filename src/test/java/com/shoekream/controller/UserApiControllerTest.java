@@ -8,9 +8,15 @@ import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.common.util.JwtUtil;
 import com.shoekream.domain.address.dto.AddressRequest;
 import com.shoekream.domain.address.dto.AddressResponse;
+import com.shoekream.domain.point.PointDivision;
+import com.shoekream.domain.point.dto.PointChargeRequest;
+import com.shoekream.domain.point.dto.PointHistoryResponse;
+import com.shoekream.domain.point.dto.PointResponse;
+import com.shoekream.domain.point.dto.PointWithdrawalRequest;
 import com.shoekream.domain.user.Account;
 import com.shoekream.domain.user.dto.*;
 import com.shoekream.service.AddressService;
+import com.shoekream.service.PointService;
 import com.shoekream.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,9 +34,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.shoekream.common.exception.ErrorCode.*;
+import static com.shoekream.domain.point.PointDivision.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.when;
@@ -54,6 +62,8 @@ class UserApiControllerTest {
     private UserService userService;
     @MockBean
     private AddressService addressService;
+    @MockBean
+    private PointService pointService;
 
     @Value("${jwt.secret}")
     String secretKey;
@@ -445,7 +455,7 @@ class UserApiControllerTest {
         void error3() throws Exception {
 
             when(userService.withdrawUser(request, email))
-                    .thenThrow(new ShoeKreamException(WITHDRAWAL_NOT_ALLOWED_POINT));
+                    .thenThrow(new ShoeKreamException(WITHDRAWAL_NOT_ALLOWED));
 
             mockMvc.perform(delete("/api/v1/users")
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
@@ -598,7 +608,7 @@ class UserApiControllerTest {
 
     @Nested
     @DisplayName("회원 주소 추가")
-    class UserAddAddress{
+    class UserAddAddress {
         Long addressId = 1L;
         AddressRequest request = AddressRequest.builder()
                 .addressName("addressName")
@@ -614,6 +624,7 @@ class UserApiControllerTest {
                 .build();
 
         String token = JwtUtil.createToken("email", "ROLE_USER", secretKey, 1000L * 60 * 60);
+
         @Test
         @DisplayName("회원 주소 등록 성공")
         void success() throws Exception {
@@ -654,7 +665,7 @@ class UserApiControllerTest {
 
     @Nested
     @DisplayName("회원 주소 조회")
-    class UserGetAddress{
+    class UserGetAddress {
         Long addressId = 1L;
 
         AddressResponse response = AddressResponse.builder()
@@ -664,6 +675,7 @@ class UserApiControllerTest {
                 .build();
 
         String token = JwtUtil.createToken("email", "ROLE_USER", secretKey, 1000L * 60 * 60);
+
         @Test
         @DisplayName("회원 주소 조회 성공")
         void success() throws Exception {
@@ -700,7 +712,7 @@ class UserApiControllerTest {
 
     @Nested
     @DisplayName("회원 주소 삭제")
-    class UserDeleteAddress{
+    class UserDeleteAddress {
         Long addressId = 1L;
 
         AddressResponse response = AddressResponse.builder()
@@ -710,14 +722,15 @@ class UserApiControllerTest {
                 .build();
 
         String token = JwtUtil.createToken("email", "ROLE_USER", secretKey, 1000L * 60 * 60);
+
         @Test
         @DisplayName("회원 주소 삭제 성공")
         void success() throws Exception {
 
-            given(addressService.deleteAddress(anyString(),anyLong()))
+            given(addressService.deleteAddress(anyString(), anyLong()))
                     .willReturn(response);
 
-            mockMvc.perform(delete("/api/v1/users/addresses/"+addressId)
+            mockMvc.perform(delete("/api/v1/users/addresses/" + addressId)
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                     .andDo(print())
                     .andExpect(jsonPath("$.message").exists())
@@ -732,10 +745,10 @@ class UserApiControllerTest {
         @DisplayName("회원 주소 삭제 실패 (가입된 회원이 아닌 경우)")
         void error() throws Exception {
 
-            when(addressService.deleteAddress(anyString(),anyLong()))
+            when(addressService.deleteAddress(anyString(), anyLong()))
                     .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
 
-            mockMvc.perform(delete("/api/v1/users/addresses/"+addressId)
+            mockMvc.perform(delete("/api/v1/users/addresses/" + addressId)
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                     .andDo(print())
                     .andExpect(jsonPath("$.message").exists())
@@ -747,10 +760,10 @@ class UserApiControllerTest {
         @DisplayName("회원 주소 삭제 실패 (삭제할 주소가 존재하지 않는 경우)")
         void error2() throws Exception {
 
-            when(addressService.deleteAddress(anyString(),anyLong()))
+            when(addressService.deleteAddress(anyString(), anyLong()))
                     .thenThrow(new ShoeKreamException(ADDRESS_NOT_FOUND));
 
-            mockMvc.perform(delete("/api/v1/users/addresses/"+addressId)
+            mockMvc.perform(delete("/api/v1/users/addresses/" + addressId)
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                     .andDo(print())
                     .andExpect(jsonPath("$.message").exists())
@@ -762,10 +775,10 @@ class UserApiControllerTest {
         @DisplayName("회원 주소 삭제 실패 (비밀번호가 일치하지 않는 경우)")
         void error3() throws Exception {
 
-            when(addressService.deleteAddress(anyString(),anyLong()))
+            when(addressService.deleteAddress(anyString(), anyLong()))
                     .thenThrow(new ShoeKreamException(WRONG_PASSWORD));
 
-            mockMvc.perform(delete("/api/v1/users/addresses/"+addressId)
+            mockMvc.perform(delete("/api/v1/users/addresses/" + addressId)
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                     .andDo(print())
                     .andExpect(jsonPath("$.message").exists())
@@ -776,7 +789,7 @@ class UserApiControllerTest {
 
     @Nested
     @DisplayName("회원 주소 수정")
-    class UserUpdateAddress{
+    class UserUpdateAddress {
         Long addressId = 1L;
 
         AddressRequest request = AddressRequest.builder()
@@ -792,14 +805,15 @@ class UserApiControllerTest {
                 .build();
 
         String token = JwtUtil.createToken("email", "ROLE_USER", secretKey, 1000L * 60 * 60);
+
         @Test
         @DisplayName("회원 주소 수정 성공")
         void success() throws Exception {
 
-            given(addressService.updateAddress(anyString(),anyLong(),any(AddressRequest.class)))
+            given(addressService.updateAddress(anyString(), anyLong(), any(AddressRequest.class)))
                     .willReturn(response);
 
-            mockMvc.perform(patch("/api/v1/users/addresses/"+addressId)
+            mockMvc.perform(patch("/api/v1/users/addresses/" + addressId)
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                             .contentType(APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -816,10 +830,196 @@ class UserApiControllerTest {
         @DisplayName("회원 주소 수정 실패 (가입된 회원이 아닌 경우)")
         void error() throws Exception {
 
-            when(addressService.updateAddress(anyString(),anyLong(),any(AddressRequest.class)))
+            when(addressService.updateAddress(anyString(), anyLong(), any(AddressRequest.class)))
                     .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
 
-            mockMvc.perform(patch("/api/v1/users/addresses/"+addressId)
+            mockMvc.perform(patch("/api/v1/users/addresses/" + addressId)
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 포인트 조회 성공 테스트")
+    class GetPoint {
+        String email = "email";
+        Long point = 1000L;
+
+        String token = JwtUtil.createToken("email", "ROLE_USER", secretKey, 1000L * 60 * 60);
+
+        @Test
+        @DisplayName("회원 포인트 조회 성공")
+        public void GetPointSuccess() throws Exception {
+            given(pointService.getUserPoint(email))
+                    .willReturn(point);
+
+
+            mockMvc.perform(get("/api/v1/users/points")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("SUCCESS"))
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result").value(point));
+        }
+
+        @Test
+        @DisplayName("회원 포인트 조회 실패 (가입된 회원이 아닌 경우) ")
+        public void GetPointError() throws Exception {
+            when(pointService.getUserPoint(email))
+                    .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
+
+            mockMvc.perform(get("/api/v1/users/points")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 포인트 내역 조회 성공 테스트")
+    class GetPointHistory {
+        String email = "email";
+        Long point = 1000L;
+        LocalDateTime time = LocalDateTime.now();
+
+        String token = JwtUtil.createToken("email", "ROLE_USER", secretKey, 1000L * 60 * 60);
+
+        PointHistoryResponse response = PointHistoryResponse.builder()
+                .amount(point)
+                .time(time)
+                .build();
+
+        @Test
+        @DisplayName("회원 포인트 충전 내역 조회 성공")
+        public void GetPointHistorySuccess() throws Exception {
+            given(pointService.getHistoryPointByDivision(email, POINT_CHARGE))
+                    .willReturn(List.of(response));
+
+
+            mockMvc.perform(get("/api/v1/users/points/charge-history")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("SUCCESS"))
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result[0].amount").value(point))
+                    .andExpect(jsonPath("$.result[0].time").exists());
+        }
+
+        @Test
+        @DisplayName("회원 포인트 조회 실패 (가입된 회원이 아닌 경우) ")
+        public void GetPointHistoryError() throws Exception {
+            when(pointService.getHistoryPointByDivision(email, POINT_CHARGE))
+                    .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
+
+            mockMvc.perform(get("/api/v1/users/points/charge-history")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 포인트 충전 성공 테스트")
+    class ChargePointHistory {
+        String email = "email";
+        Long point = 1000L;
+        LocalDateTime time = LocalDateTime.now();
+
+        String token = JwtUtil.createToken("email", "ROLE_USER", secretKey, 1000L * 60 * 60);
+
+        PointChargeRequest request = PointChargeRequest.builder()
+                .amount(point)
+                .build();
+
+        PointResponse response = PointResponse.builder()
+                .remainingPoint(point)
+                .build();
+
+        @Test
+        @DisplayName("회원 포인트 충전 성공")
+        public void ChargePointSuccess() throws Exception {
+            given(pointService.chargePoint(email, request))
+                    .willReturn(response);
+
+            mockMvc.perform(post("/api/v1/users/points/charge")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("SUCCESS"))
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result.remainingPoint").value(point));
+        }
+
+        @Test
+        @DisplayName("회원 포인트 충전 실패 (가입된 회원이 아닌 경우) ")
+        public void ChargePointError() throws Exception {
+            when(pointService.chargePoint(email, request))
+                    .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
+
+            mockMvc.perform(post("/api/v1/users/points/charge")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 포인트 출금 성공 테스트")
+    class WithdrawalPointHistory {
+        String email = "email";
+        Long point = 1000L;
+        String token = JwtUtil.createToken("email", "ROLE_USER", secretKey, 1000L * 60 * 60);
+
+        PointWithdrawalRequest request = PointWithdrawalRequest.builder()
+                .withdrawalAmount(point)
+                .password("password")
+                .build();
+
+        PointResponse response = PointResponse.builder()
+                .remainingPoint(point)
+                .build();
+
+        @Test
+        @DisplayName("회원 포인트 출금 성공")
+        public void WithdrawalPointSuccess() throws Exception {
+            given(pointService.withdrawalPoint(email, request))
+                    .willReturn(response);
+
+            mockMvc.perform(post("/api/v1/users/points/withdrawal")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("SUCCESS"))
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result.remainingPoint").value(point));
+        }
+
+        @Test
+        @DisplayName("회원 포인트 충전 실패 (가입된 회원이 아닌 경우) ")
+        public void WithdrawalPointError() throws Exception {
+            when(pointService.withdrawalPoint(email, request))
+                    .thenThrow(new ShoeKreamException(USER_NOT_FOUND));
+
+            mockMvc.perform(post("/api/v1/users/points/withdrawal")
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                             .contentType(APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -829,5 +1029,20 @@ class UserApiControllerTest {
                     .andExpect(jsonPath("$.result").exists());
         }
 
+        @Test
+        @DisplayName("회원 포인트 충전 실패 (비밀번호가 일치하지 않은 경우) ")
+        public void WithdrawalPointError2() throws Exception {
+            when(pointService.withdrawalPoint(email, request))
+                    .thenThrow(new ShoeKreamException(WRONG_PASSWORD));
+
+            mockMvc.perform(post("/api/v1/users/points/withdrawal")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
     }
 }

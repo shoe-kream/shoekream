@@ -64,4 +64,7 @@ public class ProductCreateRequest {
 
     private String resizedImagePath;
 
+    public void setOriginImagePath(String originImageUrl) {
+        this.originImagePath = originImageUrl;
+    }
 }

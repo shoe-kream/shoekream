@@ -13,4 +13,5 @@ public class ProductUpdateResponse {
     private Double minSize;
     private Double maxSize;
     private String brandName;
+    private String originImagePath;
 }

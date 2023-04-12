@@ -23,4 +23,8 @@ public class BrandCreateRequest {
                 .thumbnailImagePath(this.thumbnailImagePath)
                 .build();
     }
+
+    public void setOriginImagePath(String originImageUrl) {
+        this.originImagePath = originImageUrl;
+    }
 }

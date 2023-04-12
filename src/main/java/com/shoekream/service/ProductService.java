@@ -2,6 +2,8 @@ package com.shoekream.service;
 
 import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
+import com.shoekream.common.util.AwsS3Service;
+import com.shoekream.common.util.FileUtil;
 import com.shoekream.domain.brand.Brand;
 import com.shoekream.domain.brand.BrandRepository;
 import com.shoekream.domain.product.Product;
@@ -13,6 +15,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -22,12 +25,16 @@ public class ProductService {
 
     private final BrandRepository brandRepository;
     private final ProductRepository productRepository;
+    private final AwsS3Service awsS3Service;
 
-    public ProductCreateResponse saveProduct(ProductCreateRequest requestDto) {
+    public ProductCreateResponse saveProduct(ProductCreateRequest requestDto, MultipartFile image) {
 
         Brand savedBrand = validateBrandExists(requestDto);
 
         isExistsProduct(requestDto.getName(), requestDto.getModelNumber());
+
+        String originImageUrl = awsS3Service.uploadProductOriginImage(image);
+        requestDto.setOriginImagePath(originImageUrl);
 
         Product savedProduct = productRepository.save(Product.createProduct(requestDto,savedBrand));
 
@@ -47,13 +54,29 @@ public class ProductService {
 
         Product product = validateProductExists(id);
 
+        // 상품 이미지 전체 url 조회
+        String originImagePath = product.getOriginImagePath();
+
+        // 이미지 url에서 파일 이름만 추출
+        String fileName = FileUtil.getFileName(originImagePath);
+
+        // S3에서 상품 이미지 삭제
+        awsS3Service.deleteProductImage(fileName);
+
+        // 상품 삭제
         productRepository.delete(product);
 
         return product.toProductDeleteResponse();
     }
 
+    //3. 기존 상품 이미지 유지 or 기존 상품 이미지 변경하는 경우
+    //    → 기존 상품 이미지 삭제하고, 업데이트 될 이미지 url 초기화
+    //4. 새로운 상품 이미지 등록
+    //   4-1. 원본 이미지 저장(s3)
+    //   4-2. 썸네일용, 리사이즈용 이미지 url로 변경하고 저장
+
     @CacheEvict(value = "products", key = "#id")
-    public ProductUpdateResponse updateProduct(Long id, ProductUpdateRequest updatedProduct) {
+    public ProductUpdateResponse updateProduct(Long id, ProductUpdateRequest updatedProduct, MultipartFile newImage) {
 
         brandRepository.findById(updatedProduct.getBrandId())
                 .orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
@@ -61,6 +84,19 @@ public class ProductService {
         Product savedProduct = validateProductExists(id);
 
         checkDuplicatedUpdateProduct(updatedProduct, savedProduct);
+
+        // 요청에 새로운 이미지가 포함된 경우
+        if(newImage != null) {
+            String originImagePath = savedProduct.getOriginImagePath();
+            String originFileName = FileUtil.getFileName(originImagePath);
+            awsS3Service.deleteProductImage(originFileName);
+
+            //새로운 이미지 등록
+            String newImageUrl = awsS3Service.uploadProductOriginImage(newImage);
+            updatedProduct.setOriginImagePath(newImageUrl);
+        } else { // 요청에 이미지 포함되지 않은 경우
+            updatedProduct.setOriginImagePath(savedProduct.getOriginImagePath());
+        }
 
         savedProduct.update(updatedProduct);
 
