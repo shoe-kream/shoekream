@@ -66,9 +66,9 @@ public class UserApiController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Response<UserResponse>> withdraw(Authentication authentication, @Validated @RequestBody UserWithdrawRequest request, BindingResult br) {
+    public ResponseEntity<Response<UserResponse>> withdraw(Authentication authentication,@Validated @RequestBody UserWithdrawRequest request,BindingResult br) {
         String email = authentication.getName();
-        UserResponse response = userService.withdrawUser(request, email);
+        UserResponse response = userService.withdrawUser(request,email);
 
         return ResponseEntity.ok(Response.success(response));
     }

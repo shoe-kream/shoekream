@@ -2,6 +2,7 @@ package com.shoekream.service;
 
 import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
+import com.shoekream.common.util.constants.EmailConstants;
 import com.shoekream.dao.CertificationNumberDao;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -16,6 +17,9 @@ import java.util.UUID;
 
 import static com.shoekream.common.util.constants.EmailConstants.*;
 
+import static com.shoekream.common.util.constants.EmailConstants.DOMAIN_NAME;
+import static com.shoekream.common.util.constants.EmailConstants.MAIL_TITLE_CERTIFICATION;
+
 @RequiredArgsConstructor
 @Service
 public class EmailCertificationService {
@@ -28,16 +32,16 @@ public class EmailCertificationService {
         String certificationNumber = getCertificationNumber();
 
         String content = String.format("%s/api/v1/users/verify?certificationNumber=%s&email=%s   링크를 3분 이내에 클릭해주세요.", DOMAIN_NAME, certificationNumber, email);
-        sendMail(email, content);
+        sendMail(MAIL_TITLE_CERTIFICATION, email, content);
         certificationNumberDao.saveCertificationNumber(email, certificationNumber);
     }
 
     public String sendEmailForFindPassword(String email) throws NoSuchAlgorithmException, MessagingException {
 
-        String tempPassword = getCertificationNumber() + UUID.randomUUID().toString().substring(0,8);
+        String tempPassword = getCertificationNumber() + UUID.randomUUID().toString().substring(0, 8);
 
-        String content = String.format("임시 비밀번호 입니다. [%s]",tempPassword);
-        sendMail(email, content);
+        String content = String.format("임시 비밀번호 입니다. [%s]", tempPassword);
+        sendMail(MAIL_TITLE_FIND_PASSWORD, email, content);
 
         return tempPassword;
     }
@@ -53,11 +57,11 @@ public class EmailCertificationService {
         return result;
     }
 
-    private void sendMail(String email, String content) throws MessagingException {
+    private void sendMail(String title, String email, String content) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
         helper.setTo(email);
-        helper.setSubject(MAIL_TITLE_FIND_PASSWORD);
+        helper.setSubject(title);
         helper.setText(content);
         mailSender.send(mimeMessage);
     }
