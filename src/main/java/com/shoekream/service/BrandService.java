@@ -2,6 +2,8 @@ package com.shoekream.service;
 
 import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
+import com.shoekream.common.util.AwsS3Service;
+import com.shoekream.common.util.FileUtil;
 import com.shoekream.domain.brand.Brand;
 import com.shoekream.domain.brand.BrandRepository;
 import com.shoekream.domain.brand.dto.*;
@@ -11,6 +13,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -21,6 +24,7 @@ import java.util.List;
 public class BrandService {
 
     private final BrandRepository brandRepository;
+    private final AwsS3Service awsS3Service;
 
     public BrandInfo getBrandInfo(Long id) {
         return brandRepository.findById(id)
@@ -35,10 +39,12 @@ public class BrandService {
                 .toList();
     }
 
-
-    public BrandCreateResponse saveBrand(BrandCreateRequest requestDto) {
+    public BrandCreateResponse saveBrand(BrandCreateRequest requestDto, MultipartFile file) {
 
         checkDuplicatedBrandName(requestDto);
+
+        String originImageUrl = awsS3Service.uploadBrandOriginImage(file);
+        requestDto.setOriginImagePath(originImageUrl);
 
         Brand savedBrand = brandRepository.save(requestDto.toEntity());
 
@@ -57,17 +63,41 @@ public class BrandService {
 
         Brand brand = brandRepository.findById(id).orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
 
+        // 브랜드 이미지 전체 url 조회
+        String originImagePath = brand.getOriginImagePath();
+
+        // 이미지 url에서 파일 이름만 추출
+        String fileName = FileUtil.getFileName(originImagePath);
+
+        // S3에서 브랜드 이미지 삭제
+        awsS3Service.deleteBrandImage(fileName);
+
+        // 브랜드 삭제
         brandRepository.deleteById(id);
 
         return brand.toBrandDeleteResponse();
     }
 
     @CacheEvict(value = "brands", allEntries = true)
-    public BrandUpdateResponse updateBrand(Long id, BrandUpdateRequest updatedBrand) {
+    public BrandUpdateResponse updateBrand(Long id, BrandUpdateRequest updatedBrand, MultipartFile newImage) {
 
         Brand savedBrand = brandRepository.findById(id).orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
 
         checkDuplicatedUpdateBrandName(savedBrand,updatedBrand);
+
+        // 요청에 새로운 이미지가 들어온 경우
+        if(newImage != null) {
+            // 기존 이미지 삭제
+            String originImagePath = savedBrand.getOriginImagePath();
+            String originFileName = FileUtil.getFileName(originImagePath);
+            awsS3Service.deleteBrandImage(originFileName);
+
+            // 새로운 이미지 등록
+            String newImageUrl = awsS3Service.uploadBrandOriginImage(newImage);
+            updatedBrand.setOriginImagePath(newImageUrl);
+        } else { // 요청에 이미지 포함되지 않은 경우
+            updatedBrand.setOriginImagePath(savedBrand.getOriginImagePath());
+        }
 
         savedBrand.update(updatedBrand);
 
