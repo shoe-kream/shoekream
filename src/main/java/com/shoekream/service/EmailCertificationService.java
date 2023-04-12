@@ -12,9 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.UUID;
 
-import static com.shoekream.common.util.constants.EmailConstants.DOMAIN_NAME;
-import static com.shoekream.common.util.constants.EmailConstants.MAIL_TITLE_CERTIFICATION;
+import static com.shoekream.common.util.constants.EmailConstants.*;
 
 @RequiredArgsConstructor
 @Service
@@ -32,6 +32,16 @@ public class EmailCertificationService {
         certificationNumberDao.saveCertificationNumber(email, certificationNumber);
     }
 
+    public String sendEmailForFindPassword(String email) throws NoSuchAlgorithmException, MessagingException {
+
+        String tempPassword = getCertificationNumber() + UUID.randomUUID().toString().substring(0,8);
+
+        String content = String.format("임시 비밀번호 입니다. [%s]",tempPassword);
+        sendMail(email, content);
+
+        return tempPassword;
+    }
+
     private static String getCertificationNumber() throws NoSuchAlgorithmException {
         String result;
 
@@ -47,7 +57,7 @@ public class EmailCertificationService {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
         helper.setTo(email);
-        helper.setSubject(MAIL_TITLE_CERTIFICATION);
+        helper.setSubject(MAIL_TITLE_FIND_PASSWORD);
         helper.setText(content);
         mailSender.send(mimeMessage);
     }

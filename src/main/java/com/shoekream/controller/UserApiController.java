@@ -3,7 +3,6 @@ package com.shoekream.controller;
 import com.shoekream.common.Response;
 import com.shoekream.domain.address.dto.AddressRequest;
 import com.shoekream.domain.address.dto.AddressResponse;
-import com.shoekream.domain.point.PointDivision;
 import com.shoekream.domain.point.dto.PointChargeRequest;
 import com.shoekream.domain.point.dto.PointHistoryResponse;
 import com.shoekream.domain.point.dto.PointResponse;
@@ -164,6 +163,13 @@ public class UserApiController {
 
         emailCertificationService.verifyEmail(certificationNumber, email);
         userService.changeVerifiedUserRole(email);
+        return ResponseEntity.ok(Response.success("ok"));
+    }
+
+    @PutMapping("/find-password")
+    public ResponseEntity<Response<String>> findPassword(@Validated @RequestBody UserFindPasswordRequest request) throws MessagingException, NoSuchAlgorithmException {
+        String tempPassword = emailCertificationService.sendEmailForFindPassword(request.getEmail());
+        userService.findPassword(request, tempPassword);
         return ResponseEntity.ok(Response.success("ok"));
     }
 }
