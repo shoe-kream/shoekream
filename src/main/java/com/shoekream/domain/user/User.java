@@ -132,4 +132,8 @@ public class User extends UserBase {
                 .remainingPoint(this.point)
                 .build();
     }
+
+    public void changeUserRole() {
+        this.userRole = UserRole.ROLE_USER;
+    }
 }

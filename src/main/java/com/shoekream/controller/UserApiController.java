@@ -11,8 +11,10 @@ import com.shoekream.domain.point.dto.PointWithdrawalRequest;
 import com.shoekream.domain.user.Account;
 import com.shoekream.domain.user.dto.*;
 import com.shoekream.service.AddressService;
+import com.shoekream.service.EmailCertificationService;
 import com.shoekream.service.PointService;
 import com.shoekream.service.UserService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 import static com.shoekream.domain.point.PointDivision.*;
@@ -31,6 +34,7 @@ import static com.shoekream.domain.point.PointDivision.*;
 public class UserApiController {
     private final UserService userService;
     private final AddressService addressService;
+    private final EmailCertificationService emailCertificationService;
     private final PointService pointService;
 
 
@@ -63,9 +67,9 @@ public class UserApiController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Response<UserResponse>> withdraw(Authentication authentication,@Validated @RequestBody UserWithdrawRequest request,BindingResult br) {
+    public ResponseEntity<Response<UserResponse>> withdraw(Authentication authentication, @Validated @RequestBody UserWithdrawRequest request, BindingResult br) {
         String email = authentication.getName();
-        UserResponse response = userService.withdrawUser(request,email);
+        UserResponse response = userService.withdrawUser(request, email);
 
         return ResponseEntity.ok(Response.success(response));
     }
@@ -146,5 +150,20 @@ public class UserApiController {
     public ResponseEntity<Response<List<PointHistoryResponse>>> getWithdrawalHistory(Authentication authentication) {
         List<PointHistoryResponse> response = pointService.getHistoryPointByDivision(authentication.getName(), POINT_WITHDRAW);
         return ResponseEntity.ok(Response.success(response));
+    }
+
+    @PostMapping("/send-certification")
+    public ResponseEntity<Response<String>> sendCertificationNumber(@Validated @RequestBody UserCertificateAccountRequest request, BindingResult bindingResult) throws NoSuchAlgorithmException, MessagingException {
+        emailCertificationService.sendEmailForCertification(request.getEmail());
+
+        return ResponseEntity.ok(Response.success("ok"));
+    }
+
+    @GetMapping ("/verify")
+    public ResponseEntity<Response<String>> verifyCertificationNumber(@RequestParam(name = "certificationNumber") String certificationNumber, @RequestParam(name = "email") String email) {
+
+        emailCertificationService.verifyEmail(certificationNumber, email);
+        userService.changeVerifiedUserRole(email);
+        return ResponseEntity.ok(Response.success("ok"));
     }
 }

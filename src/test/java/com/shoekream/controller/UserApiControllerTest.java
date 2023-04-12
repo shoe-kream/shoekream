@@ -16,6 +16,7 @@ import com.shoekream.domain.point.dto.PointWithdrawalRequest;
 import com.shoekream.domain.user.Account;
 import com.shoekream.domain.user.dto.*;
 import com.shoekream.service.AddressService;
+import com.shoekream.service.EmailCertificationService;
 import com.shoekream.service.PointService;
 import com.shoekream.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,8 +41,9 @@ import java.util.List;
 import static com.shoekream.common.exception.ErrorCode.*;
 import static com.shoekream.domain.point.PointDivision.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.when;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -64,6 +66,9 @@ class UserApiControllerTest {
     private AddressService addressService;
     @MockBean
     private PointService pointService;
+
+    @MockBean
+    private EmailCertificationService emailCertificationService;
 
     @Value("${jwt.secret}")
     String secretKey;
@@ -845,7 +850,7 @@ class UserApiControllerTest {
     }
 
     @Nested
-    @DisplayName("회원 포인트 조회 성공 테스트")
+    @DisplayName("회원 포인트 조회 테스트")
     class GetPoint {
         String email = "email";
         Long point = 1000L;
@@ -884,7 +889,7 @@ class UserApiControllerTest {
     }
 
     @Nested
-    @DisplayName("회원 포인트 내역 조회 성공 테스트")
+    @DisplayName("회원 포인트 내역 조회 테스트")
     class GetPointHistory {
         String email = "email";
         Long point = 1000L;
@@ -930,11 +935,10 @@ class UserApiControllerTest {
     }
 
     @Nested
-    @DisplayName("회원 포인트 충전 성공 테스트")
+    @DisplayName("회원 포인트 충전 테스트")
     class ChargePointHistory {
         String email = "email";
         Long point = 1000L;
-        LocalDateTime time = LocalDateTime.now();
 
         String token = JwtUtil.createToken("email", "ROLE_USER", secretKey, 1000L * 60 * 60);
 
@@ -981,7 +985,7 @@ class UserApiControllerTest {
     }
 
     @Nested
-    @DisplayName("회원 포인트 출금 성공 테스트")
+    @DisplayName("회원 포인트 출금 테스트")
     class WithdrawalPointHistory {
         String email = "email";
         Long point = 1000L;
@@ -1039,6 +1043,65 @@ class UserApiControllerTest {
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                             .contentType(APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists());
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 인증번호 전송 테스트")
+    class UserCertification {
+        String email = "email";
+        UserCertificateAccountRequest request = new UserCertificateAccountRequest(email);
+
+        @Test
+        @DisplayName("회원 인증 성공")
+        public void UserCertificationSuccess() throws Exception {
+            doNothing().when(emailCertificationService)
+                    .sendEmailForCertification(email);
+
+            mockMvc.perform(post("/api/v1/users/send-certification")
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("SUCCESS"))
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result").value("ok"));
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 인증 테스트")
+    class UserVerify {
+        String email = "email";
+        String certificationNumber = "certificationNumber";
+
+        @Test
+        @DisplayName("회원 인증 성공")
+        public void UserVerifySuccess() throws Exception {
+            willDoNothing().given(emailCertificationService)
+                    .verifyEmail(certificationNumber,email);
+
+            mockMvc.perform(get("/api/v1/users/verify" + String.format("?certificationNumber=%s&email=%s", certificationNumber, email)))
+                    .andDo(print())
+                    .andExpect(jsonPath("$.message").exists())
+                    .andExpect(jsonPath("$.message").value("SUCCESS"))
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result").value("ok"));
+        }
+
+        @Test
+        @DisplayName("회원 인증 실패 (인증 번호 유효시간이 지나거나 존재하지 않는 경우) ")
+        public void UserVerifyError() throws Exception {
+
+            doThrow(new ShoeKreamException(VERIFY_NOT_ALLOWED))
+                    .when(emailCertificationService)
+                    .verifyEmail(certificationNumber,email);
+
+            mockMvc.perform(get("/api/v1/users/verify" + String.format("?certificationNumber=%s&email=%s", certificationNumber, email)))
                     .andDo(print())
                     .andExpect(jsonPath("$.message").exists())
                     .andExpect(jsonPath("$.message").value("ERROR"))
