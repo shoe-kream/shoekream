@@ -20,6 +20,7 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다."),
 
     USER_NOT_MATCH(HttpStatus.UNAUTHORIZED,"본인만 요청할 수 있습니다."),
+    VERIFY_NOT_ALLOWED(HttpStatus.UNAUTHORIZED,"인증에 실패했습니다. 다시 시도해주세요."),
 
     CHANGE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "닉네임은 7일에 한번 변경할 수 있습니다."),
     WITHDRAWAL_NOT_ALLOWED_POINT(HttpStatus.BAD_REQUEST, "잔여 포인트가 남아있어 탈퇴할 수 없습니다.");

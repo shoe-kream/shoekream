@@ -112,4 +112,8 @@ public class User extends UserBase {
     public void updateAccount(Account account) {
         this.account = account;
     }
+
+    public void changeUserRole() {
+        this.userRole = UserRole.ROLE_USER;
+    }
 }

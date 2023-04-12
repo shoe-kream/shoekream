@@ -6,7 +6,9 @@ import com.shoekream.domain.address.dto.AddressResponse;
 import com.shoekream.domain.user.Account;
 import com.shoekream.domain.user.dto.*;
 import com.shoekream.service.AddressService;
+import com.shoekream.service.EmailCertificationService;
 import com.shoekream.service.UserService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 @RestController
@@ -23,6 +26,7 @@ import java.util.List;
 public class UserApiController {
     private final UserService userService;
     private final AddressService addressService;
+    private final EmailCertificationService emailCertificationService;
 
     @PostMapping
     public ResponseEntity<Response<UserCreateResponse>> create(@Validated @RequestBody UserCreateRequest request, BindingResult br) {
@@ -53,9 +57,9 @@ public class UserApiController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Response<UserResponse>> withdraw(Authentication authentication,@Validated @RequestBody UserWithdrawRequest request,BindingResult br) {
+    public ResponseEntity<Response<UserResponse>> withdraw(Authentication authentication, @Validated @RequestBody UserWithdrawRequest request, BindingResult br) {
         String email = authentication.getName();
-        UserResponse response = userService.withdrawUser(request,email);
+        UserResponse response = userService.withdrawUser(request, email);
 
         return ResponseEntity.ok(Response.success(response));
     }
@@ -106,5 +110,20 @@ public class UserApiController {
         AddressResponse response = addressService.updateAddress(email, addressId, request);
 
         return ResponseEntity.ok(Response.success(response));
+    }
+
+    @PostMapping("/send-certification")
+    public ResponseEntity<Response<String>> sendCertificationNumber(@Validated @RequestBody UserCertificateAccountRequest request, BindingResult bindingResult) throws NoSuchAlgorithmException, MessagingException {
+        emailCertificationService.sendEmailForCertification(request.getEmail());
+
+        return ResponseEntity.ok(Response.success("ok"));
+    }
+
+    @GetMapping ("/verify")
+    public ResponseEntity<Response<String>> verifyCertificationNumber(@RequestParam(name = "certificationNumber") String certificationNumber, @RequestParam(name = "email") String email) {
+
+        emailCertificationService.verifyEmail(certificationNumber, email);
+        userService.changeVerifiedUserRole(email);
+        return ResponseEntity.ok(Response.success("ok"));
     }
 }

@@ -90,6 +90,7 @@ public class UserService {
         return foundUser.toUserResponse();
     }
 
+    @Transactional
     public UserResponse withdrawUser(UserWithdrawRequest request,String email) {
         User foundUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
@@ -105,6 +106,7 @@ public class UserService {
         return foundUser.toUserResponse();
     }
 
+    @Transactional
     public UserResponse updateAccountUser(UserUpdateAccountRequest request, String email) {
         User foundUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
@@ -119,5 +121,13 @@ public class UserService {
                 .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
 
         return foundUser.getAccount();
+    }
+
+    @Transactional
+    public void changeVerifiedUserRole(String email) {
+        User foundUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
+
+        foundUser.changeUserRole();
     }
 }
