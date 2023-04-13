@@ -130,4 +130,14 @@ public class UserService {
 
         foundUser.changeUserRole();
     }
+
+    @Transactional
+    public void findPassword(UserFindPasswordRequest request, String tempPassword) {
+        User foundUser = userRepository.findByEmailAndPhone(request.getEmail(), request.getPhone())
+                .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
+
+        foundUser.changePassword(encoder, tempPassword);
+
+    }
+
 }
