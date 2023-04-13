@@ -37,13 +37,13 @@ public class FileUtil {
     }
 
     // 이미지 파일 이름만 추출(디렉토리까진 추출x)
-    public static String getFileName(String path) {
+    public static String extractFileName(String path) {
         int idx = path.lastIndexOf("/");
 
         return path.substring(idx + 1);
     }
 
-    public static String convertBucket(String url,String bucketName) {
+    public static String convertBucket(String url, String bucketName) {
         return url.replaceFirst(ORIGINAL_BUCKET_NAME, bucketName);
     }
 

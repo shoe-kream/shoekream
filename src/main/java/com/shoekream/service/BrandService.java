@@ -9,7 +9,6 @@ import com.shoekream.domain.brand.BrandRepository;
 import com.shoekream.domain.brand.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -50,7 +49,7 @@ public class BrandService {
 
         // 원본 이미지와 리사이징 이미지는 파일 이름만 같고, 버킷과 폴더는 다르기에 db에는 변경된 url을 넣어주어야 함
         String bucketChangedImageUrl = FileUtil.convertBucket(originImageUrl, RESIZED_BUCKET_NAME);
-        String resizedImageUrl = FileUtil.convertFolder(bucketChangedImageUrl, BRAND, RESIZED_BRAND_FOLDER);
+        String resizedImageUrl = FileUtil.convertFolder(bucketChangedImageUrl, ORIGIN_BRAND_FOLDER, RESIZED_BRAND_FOLDER);
 
         requestDto.setOriginImagePath(originImageUrl, resizedImageUrl);
 
@@ -71,14 +70,16 @@ public class BrandService {
 
         Brand brand = brandRepository.findById(id).orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
 
-        // 브랜드 이미지 전체 url 조회
+        // 브랜드 이미지 관련 url 전부 조회
         String originImagePath = brand.getOriginImagePath();
+        String resizedImagePath = brand.getResizedImagePath();
 
         // 이미지 url에서 파일 이름만 추출
-        String fileName = FileUtil.getFileName(originImagePath);
+        String originFileName = FileUtil.extractFileName(originImagePath);
+        String resizedFileName = FileUtil.extractFileName(resizedImagePath);
 
         // S3에서 브랜드 이미지 삭제
-        awsS3Service.deleteBrandImage(fileName);
+        awsS3Service.deleteBrandImage(originFileName, resizedFileName);
 
         // 브랜드 삭제
         brandRepository.deleteById(id);
@@ -93,18 +94,23 @@ public class BrandService {
 
         checkDuplicatedUpdateBrandName(savedBrand,updatedBrand);
 
-        // 요청에 새로운 이미지가 들어온 경우
+        // 요청에 새로운 이미지가 포함된 경우
         if(newImage != null) {
-            // 기존 이미지 삭제
+            // 기존 이미지 전부 삭제
             String originImagePath = savedBrand.getOriginImagePath();
-            String originFileName = FileUtil.getFileName(originImagePath);
-            awsS3Service.deleteBrandImage(originFileName);
+            String resizedImagePath = savedBrand.getResizedImagePath();
+            String originFileName = FileUtil.extractFileName(originImagePath);
+            String resizedFileName = FileUtil.extractFileName(resizedImagePath);
+            awsS3Service.deleteBrandImage(originFileName, resizedFileName);
 
-            // 새로운 이미지 등록
+            //새로운 원본 이미지, 리사이징 이미지 등록
             String newImageUrl = awsS3Service.uploadBrandOriginImage(newImage);
-            updatedBrand.setOriginImagePath(newImageUrl);
+            String bucketChangedImageUrl = FileUtil.convertBucket(newImageUrl, RESIZED_BUCKET_NAME);
+            String newResizedImageUrl = FileUtil.convertFolder(bucketChangedImageUrl, ORIGIN_BRAND_FOLDER, RESIZED_BRAND_FOLDER);
+
+            updatedBrand.setOriginImagePath(newImageUrl, newResizedImageUrl);
         } else { // 요청에 이미지 포함되지 않은 경우
-            updatedBrand.setOriginImagePath(savedBrand.getOriginImagePath());
+            updatedBrand.setOriginImagePath(savedBrand.getOriginImagePath(), savedBrand.getResizedImagePath());
         }
 
         savedBrand.update(updatedBrand);

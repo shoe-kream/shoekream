@@ -24,7 +24,8 @@ public class BrandUpdateRequest {
                 .build();
     }
 
-    public void setOriginImagePath(String newImageUrl) {
+    public void setOriginImagePath(String newImageUrl, String newResizedImageUrl) {
         this.originImagePath = newImageUrl;
+        this.resizedImagePath = newResizedImageUrl;
     }
 }
