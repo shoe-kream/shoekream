@@ -56,7 +56,6 @@ public class Product extends BaseTimeEntity {
 
     private String originImagePath;
 
-    private String thumbnailImagePath;
     private String resizedImagePath;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -80,7 +79,6 @@ public class Product extends BaseTimeEntity {
                 .maxSize(request.getMaxSize())
                 .sizeGap(request.getSizeGap())
                 .originImagePath(request.getOriginImagePath())
-                .thumbnailImagePath(request.getThumbnailImagePath())
                 .resizedImagePath(request.getResizedImagePath())
                 .brand(savedBrand)
                 .build();
@@ -112,7 +110,6 @@ public class Product extends BaseTimeEntity {
                 .sizeGap(this.sizeGap)
                 .brandInfo(this.brand.toBrandInfo())
                 .originImagePath(this.originImagePath)
-                .thumbnailImagePath(this.thumbnailImagePath)
                 .resizedImagePath(this.resizedImagePath)
                 .build();
     }
@@ -138,7 +135,6 @@ public class Product extends BaseTimeEntity {
         this.maxSize = updatedProduct.getMaxSize();
         this.sizeGap = updatedProduct.getSizeGap();
         this.originImagePath = updatedProduct.getOriginImagePath();
-        this.thumbnailImagePath = updatedProduct.getThumbnailImagePath();
         this.resizedImagePath = updatedProduct.getResizedImagePath();
     }
 

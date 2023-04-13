@@ -59,8 +59,6 @@ public class ProductUpdateRequest {
 
     private String originImagePath;
 
-    private String thumbnailImagePath;
-
     private String resizedImagePath;
 
     public void setOriginImagePath(String newImageUrl) {

@@ -60,8 +60,6 @@ public class ProductCreateRequest {
 
     private String originImagePath;
 
-    private String thumbnailImagePath;
-
     private String resizedImagePath;
 
     public void setOriginImagePath(String originImageUrl) {
