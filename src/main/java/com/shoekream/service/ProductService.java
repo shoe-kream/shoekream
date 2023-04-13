@@ -11,11 +11,14 @@ import com.shoekream.domain.product.ProductRepository;
 import com.shoekream.domain.product.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import static com.shoekream.common.util.constants.AwsConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +37,12 @@ public class ProductService {
         isExistsProduct(requestDto.getName(), requestDto.getModelNumber());
 
         String originImageUrl = awsS3Service.uploadProductOriginImage(image);
-        requestDto.setOriginImagePath(originImageUrl);
+
+        // 원본 이미지와 리사이징 이미지는 파일 이름만 같고, 버킷과 폴더는 다르기에 db에는 변경된 url을 넣어주어야 함
+        String bucketChangedImageUrl = FileUtil.convertBucket(originImageUrl, RESIZED_BUCKET_NAME);
+        String resizedImageUrl = FileUtil.convertFolder(bucketChangedImageUrl, PRODUCT, RESIZED_PRODUCT_FOLDER);
+
+        requestDto.setOriginImagePath(originImageUrl,resizedImageUrl);
 
         Product savedProduct = productRepository.save(Product.createProduct(requestDto,savedBrand));
 

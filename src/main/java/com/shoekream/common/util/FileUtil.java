@@ -5,6 +5,8 @@ import com.shoekream.common.exception.ShoeKreamException;
 
 import java.util.UUID;
 
+import static com.shoekream.common.util.constants.AwsConstants.ORIGINAL_BUCKET_NAME;
+
 public class FileUtil {
 
     public static void checkFileFormat(String originalFileName) {
@@ -39,5 +41,13 @@ public class FileUtil {
         int idx = path.lastIndexOf("/");
 
         return path.substring(idx + 1);
+    }
+
+    public static String convertBucket(String url,String bucketName) {
+        return url.replaceFirst(ORIGINAL_BUCKET_NAME, bucketName);
+    }
+
+    public static String convertFolder(String url, String folder, String newFolder) {
+        return url.replaceFirst(folder, newFolder);
     }
 }

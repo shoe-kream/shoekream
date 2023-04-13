@@ -9,6 +9,7 @@ import com.shoekream.domain.brand.BrandRepository;
 import com.shoekream.domain.brand.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
+import static com.shoekream.common.util.constants.AwsConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +47,12 @@ public class BrandService {
         checkDuplicatedBrandName(requestDto);
 
         String originImageUrl = awsS3Service.uploadBrandOriginImage(file);
-        requestDto.setOriginImagePath(originImageUrl);
+
+        // 원본 이미지와 리사이징 이미지는 파일 이름만 같고, 버킷과 폴더는 다르기에 db에는 변경된 url을 넣어주어야 함
+        String bucketChangedImageUrl = FileUtil.convertBucket(originImageUrl, RESIZED_BUCKET_NAME);
+        String resizedImageUrl = FileUtil.convertFolder(bucketChangedImageUrl, BRAND, RESIZED_BRAND_FOLDER);
+
+        requestDto.setOriginImagePath(originImageUrl, resizedImageUrl);
 
         Brand savedBrand = brandRepository.save(requestDto.toEntity());
 
