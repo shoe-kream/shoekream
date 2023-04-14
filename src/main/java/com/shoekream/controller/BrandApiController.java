@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,7 +45,8 @@ public class BrandApiController {
     @PostMapping("")
     public ResponseEntity<Response<BrandCreateResponse>> createBrand(@Valid @RequestPart BrandCreateRequest requestDto,
                                                                      @RequestPart MultipartFile multipartFile,
-                                                                     BindingResult br) {
+                                                                     BindingResult br,
+                                                                     Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED).body(Response.success(brandService.saveBrand(requestDto, multipartFile)));
     }
 
@@ -52,7 +54,7 @@ public class BrandApiController {
      * 브랜드 삭제
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response<BrandDeleteResponse>> deleteBrand(@PathVariable Long id) {
+    public ResponseEntity<Response<BrandDeleteResponse>> deleteBrand(@PathVariable Long id, Authentication authentication) {
         return ResponseEntity.ok().body(Response.success(brandService.deleteBrand(id)));
     }
 
@@ -63,7 +65,8 @@ public class BrandApiController {
     public ResponseEntity<Response<BrandUpdateResponse>> updateBrand(@PathVariable Long id,
                                                                      @Valid @RequestPart BrandUpdateRequest requestDto,
                                                                      @RequestPart(required = false) MultipartFile multipartFile,
-                                                                     BindingResult br) {
+                                                                     BindingResult br,
+                                                                     Authentication authentication) {
         return ResponseEntity.ok().body(Response.success(brandService.updateBrand(id, requestDto, multipartFile)));
     }
 
