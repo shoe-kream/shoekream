@@ -4,7 +4,7 @@ package com.shoekream.service;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.domain.cart.CartProduct;
 import com.shoekream.domain.cart.CartProductRepository;
-import com.shoekream.domain.cart.dto.CartAddProductRequest;
+import com.shoekream.domain.cart.dto.CartProductRequest;
 import com.shoekream.domain.cart.dto.WishProductResponse;
 import com.shoekream.domain.product.Product;
 import com.shoekream.domain.product.ProductRepository;
@@ -16,8 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
-import static com.shoekream.common.exception.ErrorCode.PRODUCT_NOT_FOUND;
-import static com.shoekream.common.exception.ErrorCode.USER_NOT_FOUND;
+import static com.shoekream.common.exception.ErrorCode.*;
 
 @Transactional
 @Service
@@ -36,7 +35,7 @@ public class CartService {
         return foundUser.getWishList();
     }
 
-    public WishProductResponse addWishProduct(String email, CartAddProductRequest request) {
+    public WishProductResponse addWishProduct(String email, CartProductRequest request) {
         User foundUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
 
@@ -53,5 +52,17 @@ public class CartService {
         cartProductRepository.save(wishProduct);
 
         return wishProduct.toWishProductResponse();
+    }
+
+    public WishProductResponse deleteWishProduct(CartProductRequest request) {
+        Product foundProduct = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new ShoeKreamException(PRODUCT_NOT_FOUND));
+
+        CartProduct foundCartProduct = cartProductRepository.findByProduct(foundProduct)
+                .orElseThrow(() -> new ShoeKreamException(CART_PRODUCT_NOT_FOUND));
+
+        cartProductRepository.delete(foundCartProduct);
+
+        return foundCartProduct.toWishProductResponse();
     }
 }

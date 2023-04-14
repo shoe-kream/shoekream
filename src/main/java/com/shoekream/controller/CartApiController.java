@@ -1,7 +1,7 @@
 package com.shoekream.controller;
 
 import com.shoekream.common.Response;
-import com.shoekream.domain.cart.dto.CartAddProductRequest;
+import com.shoekream.domain.cart.dto.CartProductRequest;
 import com.shoekream.domain.cart.dto.WishProductResponse;
 import com.shoekream.service.CartService;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +27,14 @@ public class CartApiController {
     }
 
     @PostMapping
-    public ResponseEntity<Response<WishProductResponse>> addWishProduct(Authentication authentication, @Validated @RequestBody CartAddProductRequest request, BindingResult br) {
+    public ResponseEntity<Response<WishProductResponse>> addWishProduct(Authentication authentication, @Validated @RequestBody CartProductRequest request, BindingResult br) {
         WishProductResponse response = cartService.addWishProduct(authentication.getName(), request);
+        return ResponseEntity.ok(Response.success(response));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Response<WishProductResponse>> deleteWishProduct(Authentication authentication, @Validated @RequestBody CartProductRequest request, BindingResult br) {
+        WishProductResponse response = cartService.deleteWishProduct(request);
         return ResponseEntity.ok(Response.success(response));
     }
 }
