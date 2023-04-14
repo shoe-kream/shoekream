@@ -5,6 +5,7 @@ import com.shoekream.domain.cart.dto.WishProductResponse;
 import com.shoekream.domain.product.Product;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -30,8 +31,14 @@ public class CartProduct extends BaseTimeEntity {
                 .id(this.id)
                 .productId(this.product.getId())
                 .productName(this.product.getName())
-                .brand(this.product.getBrand())
+                .brandInfo(this.product.getBrand().toBrandInfo())
                 .build();
+    }
+
+    @Builder
+    public CartProduct(Cart cart, Product product) {
+        this.cart = cart;
+        this.product = product;
     }
 
 }

@@ -147,4 +147,14 @@ public class User extends UserBase {
                 .map(CartProduct::toWishProductResponse)
                 .collect(Collectors.toSet());
     }
+
+    public void checkWishProductDuplicate(CartProduct wishProduct) {
+        boolean hasWishProduct = this.cart.getWishList()
+                .stream()
+                .anyMatch(cartProduct -> cartProduct.getId() == wishProduct.getProduct().getId());
+
+        if (hasWishProduct) {
+            throw new ShoeKreamException(DUPLICATED_WISH_PRODUCT);
+        }
+    }
 }
