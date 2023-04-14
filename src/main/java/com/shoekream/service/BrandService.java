@@ -70,13 +70,9 @@ public class BrandService {
 
         Brand brand = brandRepository.findById(id).orElseThrow(() -> new ShoeKreamException(ErrorCode.BRAND_NOT_FOUND));
 
-        // 브랜드 이미지 관련 url 전부 조회
-        String originImagePath = brand.getOriginImagePath();
-        String resizedImagePath = brand.getResizedImagePath();
-
         // 이미지 url에서 파일 이름만 추출
-        String originFileName = FileUtil.extractFileName(originImagePath);
-        String resizedFileName = FileUtil.extractFileName(resizedImagePath);
+        String originFileName = FileUtil.extractFileName(brand.getOriginImagePath());
+        String resizedFileName = FileUtil.extractFileName(brand.getResizedImagePath());
 
         // S3에서 브랜드 이미지 삭제
         awsS3Service.deleteBrandImage(originFileName, resizedFileName);
@@ -97,10 +93,8 @@ public class BrandService {
         // 요청에 새로운 이미지가 포함된 경우
         if(newImage != null) {
             // 기존 이미지 전부 삭제
-            String originImagePath = savedBrand.getOriginImagePath();
-            String resizedImagePath = savedBrand.getResizedImagePath();
-            String originFileName = FileUtil.extractFileName(originImagePath);
-            String resizedFileName = FileUtil.extractFileName(resizedImagePath);
+            String originFileName = FileUtil.extractFileName(savedBrand.getOriginImagePath());
+            String resizedFileName = FileUtil.extractFileName(savedBrand.getResizedImagePath());
             awsS3Service.deleteBrandImage(originFileName, resizedFileName);
 
             //새로운 원본 이미지, 리사이징 이미지 등록

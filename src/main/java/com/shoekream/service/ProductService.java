@@ -61,13 +61,9 @@ public class ProductService {
 
         Product product = validateProductExists(id);
 
-        // 상품 이미지 관련 url 전부 조회
-        String originImagePath = product.getOriginImagePath();
-        String resizedImagePath = product.getResizedImagePath();
-
         // 이미지 url에서 파일 이름만 추출
-        String originFileName = FileUtil.extractFileName(originImagePath);
-        String resizedFileName = FileUtil.extractFileName(resizedImagePath);
+        String originFileName = FileUtil.extractFileName(product.getOriginImagePath());
+        String resizedFileName = FileUtil.extractFileName(product.getResizedImagePath());
 
         // S3에서 상품 관련 이미지 전부 삭제
         awsS3Service.deleteProductImage(originFileName, resizedFileName);
@@ -91,10 +87,8 @@ public class ProductService {
         // 요청에 새로운 이미지가 포함된 경우
         if(newImage != null) {
             // 기존 이미지 전부 삭제
-            String originImagePath = savedProduct.getOriginImagePath();
-            String resizedImagePath = savedProduct.getResizedImagePath();
-            String originFileName = FileUtil.extractFileName(originImagePath);
-            String resizedFileName = FileUtil.extractFileName(resizedImagePath);
+            String originFileName = FileUtil.extractFileName(savedProduct.getOriginImagePath());
+            String resizedFileName = FileUtil.extractFileName(savedProduct.getResizedImagePath());
             awsS3Service.deleteProductImage(originFileName,resizedFileName);
 
             //새로운 원본 이미지, 리사이징 이미지 등록
