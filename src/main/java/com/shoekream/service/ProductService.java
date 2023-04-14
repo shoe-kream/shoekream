@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import static com.shoekream.common.util.constants.AwsConstants.*;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -34,7 +36,12 @@ public class ProductService {
         isExistsProduct(requestDto.getName(), requestDto.getModelNumber());
 
         String originImageUrl = awsS3Service.uploadProductOriginImage(image);
-        requestDto.setOriginImagePath(originImageUrl);
+
+        // 원본 이미지와 리사이징 이미지는 파일 이름만 같고, 버킷과 폴더는 다르기에 db에는 변경된 url을 넣어주어야 함
+        String bucketChangedImageUrl = FileUtil.convertBucket(originImageUrl, RESIZED_BUCKET_NAME);
+        String resizedImageUrl = FileUtil.convertFolder(bucketChangedImageUrl, ORIGIN_PRODUCT_FOLDER, RESIZED_PRODUCT_FOLDER);
+
+        requestDto.setOriginImagePath(originImageUrl,resizedImageUrl);
 
         Product savedProduct = productRepository.save(Product.createProduct(requestDto,savedBrand));
 
@@ -54,26 +61,18 @@ public class ProductService {
 
         Product product = validateProductExists(id);
 
-        // 상품 이미지 전체 url 조회
-        String originImagePath = product.getOriginImagePath();
-
         // 이미지 url에서 파일 이름만 추출
-        String fileName = FileUtil.getFileName(originImagePath);
+        String originFileName = FileUtil.extractFileName(product.getOriginImagePath());
+        String resizedFileName = FileUtil.extractFileName(product.getResizedImagePath());
 
-        // S3에서 상품 이미지 삭제
-        awsS3Service.deleteProductImage(fileName);
+        // S3에서 상품 관련 이미지 전부 삭제
+        awsS3Service.deleteProductImage(originFileName, resizedFileName);
 
         // 상품 삭제
         productRepository.delete(product);
 
         return product.toProductDeleteResponse();
     }
-
-    //3. 기존 상품 이미지 유지 or 기존 상품 이미지 변경하는 경우
-    //    → 기존 상품 이미지 삭제하고, 업데이트 될 이미지 url 초기화
-    //4. 새로운 상품 이미지 등록
-    //   4-1. 원본 이미지 저장(s3)
-    //   4-2. 썸네일용, 리사이즈용 이미지 url로 변경하고 저장
 
     @CacheEvict(value = "products", key = "#id")
     public ProductUpdateResponse updateProduct(Long id, ProductUpdateRequest updatedProduct, MultipartFile newImage) {
@@ -87,15 +86,19 @@ public class ProductService {
 
         // 요청에 새로운 이미지가 포함된 경우
         if(newImage != null) {
-            String originImagePath = savedProduct.getOriginImagePath();
-            String originFileName = FileUtil.getFileName(originImagePath);
-            awsS3Service.deleteProductImage(originFileName);
+            // 기존 이미지 전부 삭제
+            String originFileName = FileUtil.extractFileName(savedProduct.getOriginImagePath());
+            String resizedFileName = FileUtil.extractFileName(savedProduct.getResizedImagePath());
+            awsS3Service.deleteProductImage(originFileName,resizedFileName);
 
-            //새로운 이미지 등록
+            //새로운 원본 이미지, 리사이징 이미지 등록
             String newImageUrl = awsS3Service.uploadProductOriginImage(newImage);
-            updatedProduct.setOriginImagePath(newImageUrl);
+            String bucketChangedImageUrl = FileUtil.convertBucket(newImageUrl, RESIZED_BUCKET_NAME);
+            String newResizedImageUrl = FileUtil.convertFolder(bucketChangedImageUrl, ORIGIN_PRODUCT_FOLDER, RESIZED_PRODUCT_FOLDER);
+
+            updatedProduct.setOriginImagePath(newImageUrl, newResizedImageUrl);
         } else { // 요청에 이미지 포함되지 않은 경우
-            updatedProduct.setOriginImagePath(savedProduct.getOriginImagePath());
+            updatedProduct.setOriginImagePath(savedProduct.getOriginImagePath(), savedProduct.getResizedImagePath());
         }
 
         savedProduct.update(updatedProduct);
