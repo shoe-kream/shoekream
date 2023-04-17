@@ -4,8 +4,11 @@ import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.common.util.JwtUtil;
 import com.shoekream.domain.cart.Cart;
+import com.shoekream.domain.cart.CartProduct;
+import com.shoekream.domain.cart.dto.WishProductResponse;
 import com.shoekream.domain.point.Point;
 import com.shoekream.domain.point.dto.PointResponse;
+import com.shoekream.domain.product.Product;
 import com.shoekream.domain.user.dto.UserChangeNicknameRequest;
 import com.shoekream.domain.user.dto.UserCreateResponse;
 import com.shoekream.domain.user.dto.UserResponse;
@@ -17,6 +20,8 @@ import org.springframework.util.Assert;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.shoekream.common.exception.ErrorCode.*;
 import static com.shoekream.common.util.constants.JwtConstants.*;
@@ -135,5 +140,22 @@ public class User extends UserBase {
 
     public void changeUserRole() {
         this.userRole = UserRole.ROLE_USER;
+    }
+
+    public Set<WishProductResponse> getWishList() {
+        return this.cart.getWishList()
+                .stream()
+                .map(CartProduct::toWishProductResponse)
+                .collect(Collectors.toSet());
+    }
+
+    public void checkWishProductDuplicate(Product product) {
+        boolean hasWishProduct = this.cart.getWishList()
+                .stream()
+                .anyMatch(cartProduct -> cartProduct.getProduct().getId() == product.getId());
+
+        if (hasWishProduct) {
+            throw new ShoeKreamException(DUPLICATED_WISH_PRODUCT);
+        }
     }
 }
