@@ -21,14 +21,14 @@ public class Brand extends BaseTimeEntity {
 
     private String originImagePath;
 
-    private String thumbnailImagePath;
+    private String resizedImagePath;
 
     public BrandInfo toBrandInfo() {
         return BrandInfo.builder()
                 .id(this.id)
                 .name(this.name)
                 .originImagePath(this.originImagePath)
-                .thumbnailImagePath(this.thumbnailImagePath)
+                .resizedImagePath(this.resizedImagePath)
                 .build();
     }
 
@@ -48,13 +48,13 @@ public class Brand extends BaseTimeEntity {
         return BrandUpdateResponse.builder()
                 .name(this.name)
                 .originImagePath(this.originImagePath)
-                .thumbnailImagePath(this.thumbnailImagePath)
+                .resizedImagePath(this.resizedImagePath)
                 .build();
     }
 
     public void update(BrandUpdateRequest updatedBrand) {
         this.name = updatedBrand.getName();
         this.originImagePath = updatedBrand.getOriginImagePath();
-        this.thumbnailImagePath = updatedBrand.getThumbnailImagePath();
+        this.resizedImagePath = updatedBrand.getResizedImagePath();
     }
 }

@@ -28,6 +28,5 @@ public class ProductInfo {
     private Double sizeGap;
     private BrandInfo brandInfo;
     private String originImagePath;
-    private String thumbnailImagePath;
     private String resizedImagePath;
 }

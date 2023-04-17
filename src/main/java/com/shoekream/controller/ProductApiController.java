@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,8 @@ public class ProductApiController {
     @PostMapping("")
     public ResponseEntity<Response<ProductCreateResponse>> createProduct(@Validated @RequestPart ProductCreateRequest requestDto,
                                                                          @RequestPart MultipartFile multipartFile,
-                                                                         BindingResult br) {
+                                                                         BindingResult br,
+                                                                         Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED).body(Response.success(productService.saveProduct(requestDto, multipartFile)));
     }
 
@@ -33,7 +35,7 @@ public class ProductApiController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response<ProductDeleteResponse>> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<Response<ProductDeleteResponse>> deleteProduct(@PathVariable Long id, Authentication authentication) {
         return ResponseEntity.status(HttpStatus.OK).body(Response.success(productService.deleteProduct(id)));
     }
 
@@ -41,7 +43,8 @@ public class ProductApiController {
     public ResponseEntity<Response<ProductUpdateResponse>> updateProduct(@PathVariable Long id,
                                                                          @Validated @RequestPart ProductUpdateRequest requestDto,
                                                                          @RequestPart(required = false) MultipartFile multipartFile,
-                                                                         BindingResult br) {
+                                                                         BindingResult br,
+                                                                         Authentication authentication) {
         return ResponseEntity.status(HttpStatus.OK).body(Response.success(productService.updateProduct(id, requestDto, multipartFile)));
     }
 }
