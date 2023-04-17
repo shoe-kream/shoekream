@@ -44,7 +44,7 @@ public class CartService {
 
         CartProduct wishProduct = CartProduct.of(foundUser.getCart(), foundProduct);
 
-        foundUser.checkWishProductDuplicate(wishProduct);
+        foundUser.checkWishProductDuplicate(foundProduct);
 
         CartProduct saved = cartProductRepository.save(wishProduct);
 

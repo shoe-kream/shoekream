@@ -154,7 +154,7 @@ class CartServiceTest {
                     .willReturn(Optional.of(mockProduct));
 
             doThrow(new ShoeKreamException(DUPLICATED_WISH_PRODUCT))
-                    .when(mockUser).checkWishProductDuplicate(any(CartProduct.class));
+                    .when(mockUser).checkWishProductDuplicate(any(Product.class));
 
             ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> cartService.addWishProduct(email, cartProductRequest));
 

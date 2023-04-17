@@ -8,6 +8,7 @@ import com.shoekream.domain.cart.CartProduct;
 import com.shoekream.domain.cart.dto.WishProductResponse;
 import com.shoekream.domain.point.Point;
 import com.shoekream.domain.point.dto.PointResponse;
+import com.shoekream.domain.product.Product;
 import com.shoekream.domain.user.dto.UserChangeNicknameRequest;
 import com.shoekream.domain.user.dto.UserCreateResponse;
 import com.shoekream.domain.user.dto.UserResponse;
@@ -148,10 +149,10 @@ public class User extends UserBase {
                 .collect(Collectors.toSet());
     }
 
-    public void checkWishProductDuplicate(CartProduct wishProduct) {
+    public void checkWishProductDuplicate(Product product) {
         boolean hasWishProduct = this.cart.getWishList()
                 .stream()
-                .anyMatch(cartProduct -> cartProduct.getId() == wishProduct.getProduct().getId());
+                .anyMatch(cartProduct -> cartProduct.getProduct().getId() == product.getId());
 
         if (hasWishProduct) {
             throw new ShoeKreamException(DUPLICATED_WISH_PRODUCT);

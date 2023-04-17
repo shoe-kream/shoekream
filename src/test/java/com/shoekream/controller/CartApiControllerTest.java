@@ -71,7 +71,7 @@ class CartApiControllerTest {
                 .id(1L)
                 .name("brand")
                 .originImagePath("originImagePath")
-                .thumbnailImagePath("thumbnailImagePath")
+                .resizedImagePath("thumbnailImagePath")
                 .build();
         WishProductResponse response = WishProductResponse.builder()
                 .id(1L)
@@ -131,7 +131,7 @@ class CartApiControllerTest {
                 .id(1L)
                 .name("brand")
                 .originImagePath("originImagePath")
-                .thumbnailImagePath("thumbnailImagePath")
+                .resizedImagePath("thumbnailImagePath")
                 .build();
         WishProductResponse response = WishProductResponse.builder()
                 .id(productId)
@@ -231,7 +231,7 @@ class CartApiControllerTest {
                 .id(1L)
                 .name("brand")
                 .originImagePath("originImagePath")
-                .thumbnailImagePath("thumbnailImagePath")
+                .resizedImagePath("thumbnailImagePath")
                 .build();
         WishProductResponse response = WishProductResponse.builder()
                 .id(productId)
