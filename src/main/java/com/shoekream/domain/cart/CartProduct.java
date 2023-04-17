@@ -42,7 +42,9 @@ public class CartProduct extends BaseTimeEntity {
     }
 
     public static CartProduct of(Cart cart, Product product) {
-        return new CartProduct(cart, product);
+        CartProduct cartProduct = new CartProduct(cart, product);
+        cart.getWishList().add(cartProduct);
+        return cartProduct;
     }
 
 }
