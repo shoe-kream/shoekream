@@ -56,12 +56,14 @@ class CartServiceTest {
 
     String email;
     Long productId;
+    Long cartProductId;
     CartProductRequest cartProductRequest;
 
     @BeforeEach
     void setUp(){
         email = "email";
         productId = 1L;
+        cartProductId = 1L;
         cartProductRequest = new CartProductRequest(productId);
     }
 
@@ -177,45 +179,26 @@ class CartServiceTest {
         @Test
         @DisplayName("장바구니 상품 삭제 성공")
         void success(){
-            given(productRepository.findById(productId))
-                    .willReturn(Optional.of(mockProduct));
-            given(cartProductRepository.findByProduct(mockProduct))
+            given(cartProductRepository.findById(cartProductId))
                     .willReturn(Optional.of(mockCartProduct));
 
             assertDoesNotThrow(() -> cartService.deleteWishProduct(cartProductRequest));
 
-            verify(productRepository, atLeastOnce()).findById(productId);
-            verify(cartProductRepository, atLeastOnce()).findByProduct(mockProduct);
-        }
-
-        @Test
-        @DisplayName("장바구니 상품 삭제 실패 (상품이 존재하지 않는 경우)")
-        void error(){
-            when(productRepository.findById(productId))
-                    .thenReturn(Optional.empty());
-
-            ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> cartService.deleteWishProduct(cartProductRequest));
-
-            assertThat(shoeKreamException.getErrorCode()).isEqualTo(PRODUCT_NOT_FOUND);
-
-            verify(productRepository, atLeastOnce()).findById(productId);
+            verify(cartProductRepository, atLeastOnce()).findById(cartProductId);
         }
 
         @Test
         @DisplayName("장바구니 상품 삭제 실패 (장바구니에 상품이 존재하지 않는 경우)")
-        void error2(){
-            given(productRepository.findById(productId))
-                    .willReturn(Optional.of(mockProduct));
-
-            when(cartProductRepository.findByProduct(mockProduct))
+        void error(){
+            when(cartProductRepository.findById(cartProductId))
                     .thenReturn(Optional.empty());
 
             ShoeKreamException shoeKreamException = assertThrows(ShoeKreamException.class, () -> cartService.deleteWishProduct(cartProductRequest));
 
             assertThat(shoeKreamException.getErrorCode()).isEqualTo(CART_PRODUCT_NOT_FOUND);
 
-            verify(productRepository, atLeastOnce()).findById(productId);
-            verify(cartProductRepository, atLeastOnce()).findByProduct(mockProduct);
+            verify(cartProductRepository, atLeastOnce()).findById(cartProductId);
+
         }
     }
 }

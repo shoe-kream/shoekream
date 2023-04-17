@@ -41,9 +41,9 @@ public class CartProduct extends BaseTimeEntity {
         this.product = product;
     }
 
-    public static CartProduct of(Cart cart, Product product) {
+    public static CartProduct createCartProduct(Cart cart, Product product) {
         CartProduct cartProduct = new CartProduct(cart, product);
-        cart.getWishList().add(cartProduct);
+        cart.addCartProducts(cartProduct);
         return cartProduct;
     }
 

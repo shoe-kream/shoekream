@@ -35,6 +35,9 @@ public class CartService {
         return foundUser.getWishList();
     }
 
+    /**
+     * 장바구니에 등록 요청시, productId
+     */
     public WishProductResponse addWishProduct(String email, CartProductRequest request) {
         User foundUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
@@ -42,7 +45,7 @@ public class CartService {
         Product foundProduct = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ShoeKreamException(PRODUCT_NOT_FOUND));
 
-        CartProduct wishProduct = CartProduct.of(foundUser.getCart(), foundProduct);
+        CartProduct wishProduct = CartProduct.createCartProduct(foundUser.getCart(), foundProduct);
 
         foundUser.checkWishProductDuplicate(foundProduct);
 
@@ -51,11 +54,11 @@ public class CartService {
         return saved.toWishProductResponse();
     }
 
+    /**
+     * 삭제 요청시, cartProductId
+     */
     public WishProductResponse deleteWishProduct(CartProductRequest request) {
-        Product foundProduct = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new ShoeKreamException(PRODUCT_NOT_FOUND));
-
-        CartProduct foundCartProduct = cartProductRepository.findByProduct(foundProduct)
+        CartProduct foundCartProduct = cartProductRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ShoeKreamException(CART_PRODUCT_NOT_FOUND));
 
         cartProductRepository.delete(foundCartProduct);
