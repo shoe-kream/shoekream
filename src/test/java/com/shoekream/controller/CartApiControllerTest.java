@@ -71,7 +71,7 @@ class CartApiControllerTest {
                 .id(1L)
                 .name("brand")
                 .originImagePath("originImagePath")
-                .resizedImagePath("thumbnailImagePath")
+                .resizedImagePath("resizedImagePath")
                 .build();
         WishProductResponse response = WishProductResponse.builder()
                 .id(1L)
@@ -100,7 +100,7 @@ class CartApiControllerTest {
                     .andExpect(jsonPath("$.result[0].brandInfo.id").value(1))
                     .andExpect(jsonPath("$.result[0].brandInfo.name").value("brand"))
                     .andExpect(jsonPath("$.result[0].brandInfo.originImagePath").value("originImagePath"))
-                    .andExpect(jsonPath("$.result[0].brandInfo.thumbnailImagePath").value("thumbnailImagePath"));
+                    .andExpect(jsonPath("$.result[0].brandInfo.resizedImagePath").value("resizedImagePath"));
 
         }
 
@@ -131,7 +131,7 @@ class CartApiControllerTest {
                 .id(1L)
                 .name("brand")
                 .originImagePath("originImagePath")
-                .resizedImagePath("thumbnailImagePath")
+                .resizedImagePath("resizedImagePath")
                 .build();
         WishProductResponse response = WishProductResponse.builder()
                 .id(productId)
@@ -164,7 +164,7 @@ class CartApiControllerTest {
                     .andExpect(jsonPath("$.result.brandInfo.id").value(1))
                     .andExpect(jsonPath("$.result.brandInfo.name").value("brand"))
                     .andExpect(jsonPath("$.result.brandInfo.originImagePath").value("originImagePath"))
-                    .andExpect(jsonPath("$.result.brandInfo.thumbnailImagePath").value("thumbnailImagePath"));
+                    .andExpect(jsonPath("$.result.brandInfo.resizedImagePath").value("resizedImagePath"));
 
         }
 
@@ -264,7 +264,7 @@ class CartApiControllerTest {
                     .andExpect(jsonPath("$.result.brandInfo.id").value(1))
                     .andExpect(jsonPath("$.result.brandInfo.name").value("brand"))
                     .andExpect(jsonPath("$.result.brandInfo.originImagePath").value("originImagePath"))
-                    .andExpect(jsonPath("$.result.brandInfo.thumbnailImagePath").value("thumbnailImagePath"));
+                    .andExpect(jsonPath("$.result.brandInfo.resizedImagePath").value("thumbnailImagePath"));
 
         }
 

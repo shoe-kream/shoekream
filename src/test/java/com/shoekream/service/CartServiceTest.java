@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static com.shoekream.common.exception.ErrorCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,6 +106,8 @@ class CartServiceTest {
                     .willReturn(Optional.of(mockUser));
             given(productRepository.findById(productId))
                     .willReturn(Optional.of(mockProduct));
+            given(mockUser.getCart())
+                    .willReturn(mockCart);
             given(cartProductRepository.save(any(CartProduct.class)))
                     .willReturn(mockCartProduct);
 
@@ -152,6 +155,8 @@ class CartServiceTest {
                     .willReturn(Optional.of(mockUser));
             given(productRepository.findById(productId))
                     .willReturn(Optional.of(mockProduct));
+            given(mockUser.getCart())
+                    .willReturn(mockCart);
 
             doThrow(new ShoeKreamException(DUPLICATED_WISH_PRODUCT))
                     .when(mockUser).checkWishProductDuplicate(any(Product.class));
