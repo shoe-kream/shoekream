@@ -41,4 +41,8 @@ public class CartProduct extends BaseTimeEntity {
         this.product = product;
     }
 
+    public static CartProduct of(Cart cart, Product product) {
+        return new CartProduct(cart, product);
+    }
+
 }

@@ -42,16 +42,13 @@ public class CartService {
         Product foundProduct = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ShoeKreamException(PRODUCT_NOT_FOUND));
 
-        CartProduct wishProduct = CartProduct.builder()
-                .cart(foundUser.getCart())
-                .product(foundProduct)
-                .build();
+        CartProduct wishProduct = CartProduct.of(foundUser.getCart(), foundProduct);
 
         foundUser.checkWishProductDuplicate(wishProduct);
 
-        cartProductRepository.save(wishProduct);
+        CartProduct saved = cartProductRepository.save(wishProduct);
 
-        return wishProduct.toWishProductResponse();
+        return saved.toWishProductResponse();
     }
 
     public WishProductResponse deleteWishProduct(CartProductRequest request) {
