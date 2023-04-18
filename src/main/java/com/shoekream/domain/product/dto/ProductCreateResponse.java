@@ -13,4 +13,6 @@ public class ProductCreateResponse {
     private Double minSize;
     private Double maxSize;
     private String brandName;
+    private String originImagePath;
+    private String resizedImagePath;
 }
