@@ -3,6 +3,7 @@ package com.shoekream.domain.user;
 import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.common.util.JwtUtil;
+import com.shoekream.domain.address.Address;
 import com.shoekream.domain.cart.Cart;
 import com.shoekream.domain.cart.CartProduct;
 import com.shoekream.domain.cart.dto.WishProductResponse;
@@ -11,6 +12,7 @@ import com.shoekream.domain.point.dto.PointResponse;
 import com.shoekream.domain.product.Product;
 import com.shoekream.domain.user.dto.UserChangeNicknameRequest;
 import com.shoekream.domain.user.dto.UserCreateResponse;
+import com.shoekream.domain.user.dto.UserInfoForTrade;
 import com.shoekream.domain.user.dto.UserResponse;
 import jakarta.persistence.*;
 import lombok.*;
@@ -49,6 +51,9 @@ public class User extends UserBase {
     @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "CART_ID")
     private Cart cart;
+
+    @OneToMany(mappedBy = "user")
+    private List<Address> addressList = new ArrayList<>();
 
     @Builder
     public User(Long id, String email, String password, UserRole userRole, String nickname, String phone, Long point, LocalDateTime nicknameModifiedDate, Cart cart) {
@@ -157,5 +162,12 @@ public class User extends UserBase {
         if (hasWishProduct) {
             throw new ShoeKreamException(DUPLICATED_WISH_PRODUCT);
         }
+    }
+
+    public UserInfoForTrade toUserInfoForTrade() {
+        return UserInfoForTrade.builder()
+                .addressList(this.addressList)
+                .account(this.account)
+                .build();
     }
 }

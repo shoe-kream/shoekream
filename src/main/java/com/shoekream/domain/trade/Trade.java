@@ -3,6 +3,7 @@ package com.shoekream.domain.trade;
 import com.shoekream.domain.BaseTimeEntity;
 import com.shoekream.domain.address.Address;
 import com.shoekream.domain.product.Product;
+import com.shoekream.domain.trade.dto.TradeBidInfos;
 import com.shoekream.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -51,4 +52,13 @@ public class Trade extends BaseTimeEntity {
     private String companyToSellerTrackingNumber;
 
     private String cancelReason;
+
+    public TradeBidInfos toTradeBidInfos() {
+        return TradeBidInfos.builder()
+                .tradeId(this.id)
+                .productId(this.product.getId())
+                .productSize(this.productSize)
+                .price(this.price)
+                .build();
+    }
 }
