@@ -12,6 +12,7 @@ import com.shoekream.domain.product.dto.ProductInfoFromTrade;
 import com.shoekream.domain.trade.Trade;
 import com.shoekream.domain.trade.BidCreateRequest;
 import com.shoekream.domain.trade.TradeRepository;
+import com.shoekream.domain.trade.dto.ImmediatePurchaseRequest;
 import com.shoekream.domain.trade.dto.TradeInfos;
 import com.shoekream.domain.user.User;
 import com.shoekream.domain.user.dto.UserInfoForTrade;
@@ -108,4 +109,31 @@ public class TradeService {
         }
     }
 
+    public void immediatePurchase(String email, ImmediatePurchaseRequest requestDto) {
+
+        User buyer = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.USER_NOT_FOUND));
+
+        Trade trade = tradeRepository.findById(requestDto.getTradeId())
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.TRADE_NOT_FOUND));
+
+        // 요청 주소가 주소록에 있는지 확인
+        Address buyerAddress = buyer.getAddressList().stream()
+                .filter(address -> address.getId().equals(requestDto.getAddressId()))
+                .findAny()
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.ADDRESS_NOT_FOUND));
+
+        // 구매자 포인트 충분한지 확인
+        buyer.checkPointForPurchase(trade.getPrice());
+
+        // 판매자 발송 대기 상태로 변경
+        trade.registerImmediatePurchase(buyer, buyerAddress);
+
+        // 구매자 포인트 차감
+        buyer.deductPoints(trade.getPrice());
+
+        // 구매자 포인트 차감 이력 생성 후 저장
+        Point point = Point.registerPointDeductionHistory(buyer, trade.getPrice());
+        pointRepository.save(point);
+    }
 }

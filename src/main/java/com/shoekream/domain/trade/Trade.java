@@ -1,5 +1,7 @@
 package com.shoekream.domain.trade;
 
+import com.shoekream.common.exception.ErrorCode;
+import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.domain.BaseTimeEntity;
 import com.shoekream.domain.address.Address;
 import com.shoekream.domain.product.Product;
@@ -60,5 +62,11 @@ public class Trade extends BaseTimeEntity {
                 .productSize(this.productSize)
                 .price(this.price)
                 .build();
+    }
+
+    public void registerImmediatePurchase(User buyer, Address buyerAddress) {
+        this.buyer = buyer;
+        this.buyerAddress = buyerAddress;
+        this.status = TradeStatus.PRE_SELLER_SHIPMENT;
     }
 }

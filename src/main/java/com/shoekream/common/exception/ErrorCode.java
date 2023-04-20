@@ -20,6 +20,7 @@ public enum ErrorCode {
     DUPLICATED_WISH_PRODUCT(HttpStatus.CONFLICT, "이미 장바구니에 등록되어 있는 상품입니다."),
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다."),
     CART_PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니에서 해당 상품을 찾을 수 없습니다."),
+    TRADE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 입찰 내역을 찾을 수 없습니다."),
 
     USER_NOT_MATCH(HttpStatus.UNAUTHORIZED,"본인만 요청할 수 있습니다."),
     VERIFY_NOT_ALLOWED(HttpStatus.UNAUTHORIZED,"인증에 실패했습니다. 다시 시도해주세요."),

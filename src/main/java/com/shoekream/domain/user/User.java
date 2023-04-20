@@ -180,4 +180,10 @@ public class User extends UserBase {
     public void deductPoints(Long bidPrice) {
         this.point -= bidPrice;
     }
+
+    public void checkPointForPurchase(Long bidPrice) {
+        if(bidPrice > this.point) {
+            throw new ShoeKreamException(ErrorCode.NOT_ALLOWED_WITHDRAWAL_POINT);
+        }
+    }
 }
