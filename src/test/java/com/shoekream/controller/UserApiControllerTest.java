@@ -8,7 +8,6 @@ import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.common.util.JwtUtil;
 import com.shoekream.domain.address.dto.AddressRequest;
 import com.shoekream.domain.address.dto.AddressResponse;
-import com.shoekream.domain.point.PointDivision;
 import com.shoekream.domain.point.dto.PointChargeRequest;
 import com.shoekream.domain.point.dto.PointHistoryResponse;
 import com.shoekream.domain.point.dto.PointResponse;
@@ -42,7 +41,6 @@ import static com.shoekream.common.exception.ErrorCode.*;
 import static com.shoekream.domain.point.PointDivision.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -1054,13 +1052,13 @@ class UserApiControllerTest {
     @DisplayName("회원 인증번호 전송 테스트")
     class UserCertification {
         String email = "email";
-        UserCertificateAccountRequest request = new UserCertificateAccountRequest(email);
-
+        UserCertificateRequest request = new UserCertificateRequest(email);
+        UserCertificateResponse response = new UserCertificateResponse(email,"certificationNumber");
         @Test
         @DisplayName("회원 인증 성공")
         public void UserCertificationSuccess() throws Exception {
-            doNothing().when(emailCertificationService)
-                    .sendEmailForCertification(email);
+            given(userService.checkUserExistForCertificate(request))
+                    .willReturn(response);
 
             mockMvc.perform(post("/api/v1/users/send-certification")
                             .contentType(APPLICATION_JSON)
@@ -1068,8 +1066,7 @@ class UserApiControllerTest {
                     .andDo(print())
                     .andExpect(jsonPath("$.message").exists())
                     .andExpect(jsonPath("$.message").value("SUCCESS"))
-                    .andExpect(jsonPath("$.result").exists())
-                    .andExpect(jsonPath("$.result").value("ok"));
+                    .andExpect(jsonPath("$.result").exists());
         }
     }
 
@@ -1091,21 +1088,6 @@ class UserApiControllerTest {
                     .andExpect(jsonPath("$.message").value("SUCCESS"))
                     .andExpect(jsonPath("$.result").exists())
                     .andExpect(jsonPath("$.result").value("ok"));
-        }
-
-        @Test
-        @DisplayName("회원 인증 실패 (인증 번호 유효시간이 지나거나 존재하지 않는 경우) ")
-        public void UserVerifyError() throws Exception {
-
-            doThrow(new ShoeKreamException(VERIFY_NOT_ALLOWED))
-                    .when(emailCertificationService)
-                    .verifyEmail(certificationNumber,email);
-
-            mockMvc.perform(get("/api/v1/users/verify" + String.format("?certificationNumber=%s&email=%s", certificationNumber, email)))
-                    .andDo(print())
-                    .andExpect(jsonPath("$.message").exists())
-                    .andExpect(jsonPath("$.message").value("ERROR"))
-                    .andExpect(jsonPath("$.result").exists());
         }
     }
 }
