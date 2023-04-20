@@ -60,6 +60,9 @@ public class TradeService {
                 .findAny()
                 .orElseThrow(() -> new ShoeKreamException(ErrorCode.ADDRESS_NOT_FOUND));
 
+        // 입찰 등록하고자 하는 상품의 사이즈가 유효한지 확인
+        checkExistProductSize(requestDto, product);
+
         Trade trade = requestDto.toEntityForSeller(user, product, sellerAddress);
 
         tradeRepository.save(trade);
@@ -79,6 +82,9 @@ public class TradeService {
                 .findAny()
                 .orElseThrow(() -> new ShoeKreamException(ErrorCode.ADDRESS_NOT_FOUND));
 
+        // 입찰 등록하고자 하는 상품의 사이즈가 유효한지 확인
+        checkExistProductSize(requestDto, product);
+
         // 포인트 충분한지 확인
         user.checkEnoughPoint(requestDto.getPrice());
 
@@ -94,6 +100,12 @@ public class TradeService {
         Point point = Point.registerPointDeductionHistory(user, trade.getPrice());
         pointRepository.save(point);
 
+    }
+
+    private void checkExistProductSize(BidCreateRequest requestDto, Product product) {
+        if(requestDto.getProductSize() > product.getMaxSize() || requestDto.getProductSize() < product.getMinSize()) {
+            throw new ShoeKreamException(ErrorCode.NOT_ALLOWED_PRODUCT_SIZE);
+        }
     }
 
 }
