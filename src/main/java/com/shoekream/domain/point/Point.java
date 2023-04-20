@@ -32,4 +32,12 @@ public class Point extends BaseTimeEntity {
                 .amount(this.amount)
                 .build();
     }
+
+    public static Point registerPointDeductionHistory(User user, Long price) {
+        return Point.builder()
+                .user(user)
+                .amount(price)
+                .division(PointDivision.PURCHASE_DEDUCTION)
+                .build();
+    }
 }

@@ -37,4 +37,15 @@ public class BidCreateRequest {
                 .sellerAddress(sellerAddress)
                 .build();
     }
+
+    public Trade toEntityForBuyer(User user, Product product, Address buyerAddress) {
+        return Trade.builder()
+                .buyer(user)
+                .product(product)
+                .status(TradeStatus.PRE_OFFER)
+                .price(this.price)
+                .productSize(this.productSize)
+                .buyerAddress(buyerAddress)
+                .build();
+    }
 }

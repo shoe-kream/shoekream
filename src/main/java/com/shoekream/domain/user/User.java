@@ -170,4 +170,14 @@ public class User extends UserBase {
                 .account(this.account)
                 .build();
     }
+
+    public void checkEnoughPoint(Long bidPrice) {
+        if(bidPrice > this.point) {
+            throw new ShoeKreamException(ErrorCode.NOT_ALLOWED_WITHDRAWAL_POINT);
+        }
+    }
+
+    public void deductPoints(Long bidPrice) {
+        this.point -= bidPrice;
+    }
 }

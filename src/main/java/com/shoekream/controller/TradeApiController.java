@@ -36,5 +36,14 @@ public class TradeApiController {
         return ResponseEntity.ok(Response.success("ok"));
     }
 
+    @PostMapping("/purchaseBid")
+    public ResponseEntity<Response<String>> makePurchaseBid(@Validated @RequestBody BidCreateRequest requestDto,
+                                                           Authentication authentication,
+                                                           BindingResult br) {
+        tradeService.createPurchaseBid(authentication.getName(), requestDto);
+        return ResponseEntity.ok(Response.success("ok"));
+    }
+
+
 
 }
