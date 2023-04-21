@@ -13,14 +13,14 @@ public class BrandInfo {
     private Long id;
     private String name;
     private String originImagePath;
-    private String thumbnailImagePath;
+    private String resizedImagePath;
 
     public Brand toEntity() {
         return Brand.builder()
                 .id(this.id)
                 .name(this.name)
                 .originImagePath(this.originImagePath)
-                .thumbnailImagePath(this.thumbnailImagePath)
+                .resizedImagePath(this.resizedImagePath)
                 .build();
     }
 }

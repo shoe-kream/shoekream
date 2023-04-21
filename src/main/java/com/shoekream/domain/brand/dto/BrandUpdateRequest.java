@@ -14,13 +14,18 @@ public class BrandUpdateRequest {
     private String name;
 
     private String originImagePath;
-    private String thumbnailImagePath;
+    private String resizedImagePath;
 
     public Brand toEntity() {
         return Brand.builder()
                 .name(this.name)
                 .originImagePath(this.originImagePath)
-                .thumbnailImagePath(this.thumbnailImagePath)
+                .resizedImagePath(this.resizedImagePath)
                 .build();
+    }
+
+    public void setOriginImagePath(String newImageUrl, String newResizedImageUrl) {
+        this.originImagePath = newImageUrl;
+        this.resizedImagePath = newResizedImageUrl;
     }
 }

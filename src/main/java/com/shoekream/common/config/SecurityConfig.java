@@ -32,6 +32,31 @@ public class SecurityConfig {
 
                 .and()
                 .authorizeHttpRequests()
+                .requestMatchers(HttpMethod.GET,"/api/v1/brands/**").permitAll()
+                .requestMatchers(HttpMethod.GET,"/api/v1/products/**").permitAll()
+
+                .requestMatchers(HttpMethod.PATCH,"/api/v1/users/password").authenticated()
+                .requestMatchers(HttpMethod.PATCH,"/api/v1/users/nickname").authenticated()
+                .requestMatchers(HttpMethod.DELETE,"/api/v1/users").authenticated()
+                .requestMatchers(HttpMethod.PATCH,"/api/v1/users/account").authenticated()
+                .requestMatchers(HttpMethod.GET,"/api/v1/users/account").authenticated()
+                .requestMatchers(HttpMethod.POST,"/api/v1/users/addresses").authenticated()
+                .requestMatchers(HttpMethod.GET,"/api/v1/users/addresses").authenticated()
+                .requestMatchers(HttpMethod.DELETE,"/api/v1/users/addresses/**").authenticated()
+                .requestMatchers(HttpMethod.PATCH,"/api/v1/users/addresses/**").authenticated()
+                .requestMatchers(HttpMethod.POST,"/api/v1/users/points/**").authenticated()
+                .requestMatchers(HttpMethod.GET,"/api/v1/users/points/**").authenticated()
+
+                .requestMatchers(HttpMethod.POST,"/api/v1/brands").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH,"/api/v1/brands/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE,"/api/v1/brands/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST,"/api/v1/products/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT,"/api/v1/products/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE,"/api/v1/products/**").hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.GET,"/api/v1/carts/**").authenticated()
+                .requestMatchers(HttpMethod.POST,"/api/v1/carts/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE,"/api/v1/carts/**").authenticated()
                 .anyRequest().permitAll()
 
                 .and()

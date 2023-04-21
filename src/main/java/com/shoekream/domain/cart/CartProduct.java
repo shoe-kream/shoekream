@@ -1,9 +1,11 @@
 package com.shoekream.domain.cart;
 
 import com.shoekream.domain.BaseTimeEntity;
+import com.shoekream.domain.cart.dto.WishProductResponse;
 import com.shoekream.domain.product.Product;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -22,5 +24,27 @@ public class CartProduct extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PRODUCT_ID")
     private Product product;
+
+
+    public WishProductResponse toWishProductResponse(){
+        return WishProductResponse.builder()
+                .id(this.id)
+                .productId(this.product.getId())
+                .productName(this.product.getName())
+                .brandInfo(this.product.getBrand().toBrandInfo())
+                .build();
+    }
+
+    @Builder
+    public CartProduct(Cart cart, Product product) {
+        this.cart = cart;
+        this.product = product;
+    }
+
+    public static CartProduct createCartProduct(Cart cart, Product product) {
+        CartProduct cartProduct = new CartProduct(cart, product);
+        cart.addCartProducts(cartProduct);
+        return cartProduct;
+    }
 
 }

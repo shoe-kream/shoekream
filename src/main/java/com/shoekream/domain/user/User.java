@@ -1,11 +1,14 @@
 package com.shoekream.domain.user;
 
-import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.common.util.JwtUtil;
 import com.shoekream.domain.cart.Cart;
+import com.shoekream.domain.cart.CartProduct;
+import com.shoekream.domain.cart.dto.WishProductResponse;
 import com.shoekream.domain.point.Point;
-import com.shoekream.domain.user.dto.UserCreateResponse;
+import com.shoekream.domain.point.dto.PointResponse;
+import com.shoekream.domain.product.Product;
+import com.shoekream.domain.user.dto.*;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,7 +17,10 @@ import org.springframework.util.Assert;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import static com.shoekream.common.exception.ErrorCode.*;
 import static com.shoekream.common.util.constants.JwtConstants.*;
 
 @Getter
@@ -72,11 +78,103 @@ public class User extends UserBase {
 
     public void checkPassword(BCryptPasswordEncoder encoder, String inputPassword) {
         if (!encoder.matches(inputPassword, this.password)) {
-            throw new ShoeKreamException(ErrorCode.WRONG_PASSWORD);
+            throw new ShoeKreamException(WRONG_PASSWORD);
         }
     }
 
     public String createToken(String secretKey) {
         return JwtUtil.createToken(this.email, this.userRole.toString(), secretKey, TOKEN_VALID_MILLIS);
+    }
+
+    public void changePassword(BCryptPasswordEncoder encoder, String newPassword) {
+        this.password = encoder.encode(newPassword);
+    }
+
+    public UserResponse toUserResponse() {
+        return UserResponse.builder()
+                .userId(this.getId())
+                .email(this.email)
+                .build();
+    }
+
+    public void changeNickname(UserChangeNicknameRequest request) {
+        if(!canChangeNickname()){
+            throw new ShoeKreamException(CHANGE_NOT_ALLOWED);
+        }
+        this.nickname = request.getNickname();
+        this.nicknameModifiedDate = LocalDateTime.now();
+    }
+
+    private boolean canChangeNickname() {
+        return this.nicknameModifiedDate.isBefore(LocalDateTime.now().minusDays(7));
+    }
+
+    public boolean hasPoint() {
+        return this.point > 0;
+    }
+
+    public void updateAccount(Account account) {
+        this.account = account;
+    }
+
+    public void chargePoint(Long amount) {
+        this.point += amount;
+    }
+
+    public void withdrawalPoint(Long withdrawalAmount) {
+        if (this.point < withdrawalAmount) {
+            throw new ShoeKreamException(NOT_ALLOWED_WITHDRAWAL_POINT);
+        }
+        this.point -= withdrawalAmount;
+    }
+
+    public PointResponse toPointResponse() {
+
+        return PointResponse.builder()
+                .remainingPoint(this.point)
+                .build();
+    }
+
+    public void changeUserRole() {
+        this.userRole = UserRole.ROLE_USER;
+    }
+
+    public Set<WishProductResponse> getWishList() {
+        return this.cart.getWishList()
+                .stream()
+                .map(CartProduct::toWishProductResponse)
+                .collect(Collectors.toSet());
+    }
+
+    public void checkWishProductDuplicate(Product product) {
+        boolean hasWishProduct = this.cart.getWishList()
+                .stream()
+                .anyMatch(cartProduct -> cartProduct.getProduct().getId() == product.getId());
+
+        if (hasWishProduct) {
+            throw new ShoeKreamException(DUPLICATED_WISH_PRODUCT);
+        }
+    }
+
+    public UserFindPasswordResponse toUserFindPasswordResponse(String tempPassword) {
+        return UserFindPasswordResponse.builder()
+                .email(email)
+                .tempPassword(tempPassword)
+                .build();
+    }
+
+    public UserCertificateResponse toUserCertificateAccountResponse(String certificationNumber) {
+        return UserCertificateResponse.builder()
+                .email(this.email)
+                .certificationNumber(certificationNumber)
+                .build();
+    }
+
+
+    public UserVerificationResponse toUserVerificationAccountResponse(String certificationNumber) {
+        return UserVerificationResponse.builder()
+                .email(this.email)
+                .certificationNumber(certificationNumber)
+                .build();
     }
 }

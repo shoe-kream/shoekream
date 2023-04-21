@@ -21,7 +21,7 @@ public class Cart extends BaseTimeEntity {
     private Set<CartProduct> wishList = new HashSet<>();
 
     public void addCartProducts(CartProduct cartItem) {
-        wishList.add(cartItem);
+        this.wishList.add(cartItem);
     }
 
 
