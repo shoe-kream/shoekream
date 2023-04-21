@@ -168,11 +168,11 @@ public class Product extends BaseTimeEntity {
                 .build();
     }
 
-    // 즉시 판매가로 변환
+    // 즉시 판매가(구매 입찰 등록된 것)로 변환
     private TradeBidInfos toImmdiateSale(Double productSize) {
-        return trades.stream()  // 입찰 신청 상태 + 구매자 없음 + 사이즈 일치 + 가장 높은 가격
+        return trades.stream()  // 입찰 신청 상태 + 판매자 없음 + 사이즈 일치 + 가장 높은 가격
                 .filter(trade -> trade.getStatus() == TradeStatus.PRE_OFFER)
-                .filter(trade -> trade.getBuyer() == null)
+                .filter(trade -> trade.getSeller() == null)
                 .filter(trade -> trade.getProductSize() == productSize)
                 .sorted(Comparator.comparing(Trade::getPrice).reversed())
                 .map(Trade::toTradeBidInfos)
@@ -181,11 +181,11 @@ public class Product extends BaseTimeEntity {
     }
 
 
-    // 즉시 구매가로 변환
+    // 즉시 구매가(판매 입찰 등록된 것)로 변환
     private TradeBidInfos toImmdiatePurchase(Double productSize) {
-        return trades.stream()  // 입찰 신청 상태 + 판매자 없음 + 사이즈 일치 + 가장 낮은 가격
+        return trades.stream()  // 입찰 신청 상태 + 구매자 없음 + 사이즈 일치 + 가장 낮은 가격
                 .filter(trade -> trade.getStatus() == TradeStatus.PRE_OFFER)
-                .filter(trade -> trade.getSeller() == null)
+                .filter(trade -> trade.getBuyer() == null)
                 .filter(trade -> trade.getProductSize() == productSize)
                 .sorted(Comparator.comparing(Trade::getPrice))
                 .map(Trade::toTradeBidInfos)
