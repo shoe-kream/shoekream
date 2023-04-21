@@ -22,11 +22,13 @@
 
   [**Redis로 사용자 인증 구현하기**](https://inkyu-yoon.github.io/docs/Language/SpringBoot/RedisAndAuth)
 
+
 <br>
 
 * [#4] 응답속도 향상을 위한 이미지 리사이징 적용 - AWS Lambda 활용
 
   [**AWS Lambda를 이용해 이미지 리사이징 적용 - 이미지 로딩 속도 최적화**](https://percyfrank.github.io/springboot/Lambda01/)
+
 
 
 <br>
@@ -35,11 +37,5 @@
 
   [**이메일 전송 기능을 비동기 처리해서 응답속도 개선하기**](https://inkyu-yoon.github.io/docs/Language/SpringBoot/EmailAsync)  
   [**메일 전송 기능을 EventHandler와 AOP를 활용해 개선하기**](https://inkyu-yoon.github.io/docs/Language/SpringBoot/EmailAop)
-
-
-
-
-
-
 
 
