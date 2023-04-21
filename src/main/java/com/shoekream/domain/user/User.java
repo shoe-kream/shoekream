@@ -1,5 +1,6 @@
 package com.shoekream.domain.user;
 
+import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.common.util.JwtUtil;
 import com.shoekream.domain.address.Address;
