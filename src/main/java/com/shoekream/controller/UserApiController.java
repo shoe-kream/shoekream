@@ -10,7 +10,6 @@ import com.shoekream.domain.point.dto.PointWithdrawalRequest;
 import com.shoekream.domain.user.Account;
 import com.shoekream.domain.user.dto.*;
 import com.shoekream.service.AddressService;
-import com.shoekream.service.EmailCertificationService;
 import com.shoekream.service.PointService;
 import com.shoekream.service.UserService;
 import jakarta.mail.MessagingException;
@@ -33,7 +32,6 @@ import static com.shoekream.domain.point.PointDivision.*;
 public class UserApiController {
     private final UserService userService;
     private final AddressService addressService;
-    private final EmailCertificationService emailCertificationService;
     private final PointService pointService;
 
 
@@ -152,24 +150,20 @@ public class UserApiController {
     }
 
     @PostMapping("/send-certification")
-    public ResponseEntity<Response<String>> sendCertificationNumber(@Validated @RequestBody UserCertificateAccountRequest request, BindingResult bindingResult) throws NoSuchAlgorithmException, MessagingException {
-        emailCertificationService.sendEmailForCertification(request.getEmail());
-
-        return ResponseEntity.ok(Response.success("ok"));
+    public ResponseEntity<Response<UserCertificateResponse>> sendCertificationNumber(@Validated @RequestBody UserCertificateRequest request, BindingResult bindingResult) throws NoSuchAlgorithmException, MessagingException {
+        UserCertificateResponse response = userService.checkUserExistForCertificate(request);
+        return ResponseEntity.ok(Response.success(response));
     }
 
     @GetMapping ("/verify")
     public ResponseEntity<Response<String>> verifyCertificationNumber(@RequestParam(name = "certificationNumber") String certificationNumber, @RequestParam(name = "email") String email) {
-
-        emailCertificationService.verifyEmail(certificationNumber, email);
         userService.changeVerifiedUserRole(email);
         return ResponseEntity.ok(Response.success("ok"));
     }
 
     @PutMapping("/find-password")
-    public ResponseEntity<Response<String>> findPassword(@Validated @RequestBody UserFindPasswordRequest request) throws MessagingException, NoSuchAlgorithmException {
-        String tempPassword = emailCertificationService.sendEmailForFindPassword(request.getEmail());
-        userService.findPassword(request, tempPassword);
+    public ResponseEntity<Response<String>> findPassword(@Validated @RequestBody UserFindPasswordRequest request) throws NoSuchAlgorithmException {
+        userService.findPassword(request);
         return ResponseEntity.ok(Response.success("ok"));
     }
 }

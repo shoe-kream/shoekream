@@ -2,18 +2,17 @@ package com.shoekream.service;
 
 import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
-import com.shoekream.common.util.constants.EmailConstants;
+import com.shoekream.common.util.SecureCodeUtil;
 import com.shoekream.dao.CertificationNumberDao;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.UUID;
 
 import static com.shoekream.common.util.constants.EmailConstants.*;
 
@@ -27,35 +26,19 @@ public class EmailCertificationService {
     private final JavaMailSender mailSender;
     private final CertificationNumberDao certificationNumberDao;
 
-    public void sendEmailForCertification(String email) throws NoSuchAlgorithmException, MessagingException {
-
-        String certificationNumber = getCertificationNumber();
-
+    @Async(value = "mailExecutor")
+    public void sendEmailForCertification(String email, String certificationNumber) throws MessagingException {
         String content = String.format("%s/api/v1/users/verify?certificationNumber=%s&email=%s   링크를 3분 이내에 클릭해주세요.", DOMAIN_NAME, certificationNumber, email);
         sendMail(MAIL_TITLE_CERTIFICATION, email, content);
         certificationNumberDao.saveCertificationNumber(email, certificationNumber);
     }
 
-    public String sendEmailForFindPassword(String email) throws NoSuchAlgorithmException, MessagingException {
-
-        String tempPassword = getCertificationNumber() + UUID.randomUUID().toString().substring(0, 8);
-
+    @Async(value = "mailExecutor")
+    public void sendEmailForFindPassword(String email,String tempPassword) throws MessagingException {
         String content = String.format("임시 비밀번호 입니다. [%s]", tempPassword);
         sendMail(MAIL_TITLE_FIND_PASSWORD, email, content);
-
-        return tempPassword;
     }
 
-    private static String getCertificationNumber() throws NoSuchAlgorithmException {
-        String result;
-
-        do {
-            int i = SecureRandom.getInstanceStrong().nextInt(999999);
-            result = String.valueOf(i);
-        } while (result.length() != 6);
-
-        return result;
-    }
 
     private void sendMail(String title, String email, String content) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();

@@ -10,11 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 @EqualsAndHashCode
-public class UserVerificationAccountRequest {
+public class UserCertificateRequest {
 
     @NotBlank(message = "이메일은 필수 입력 항목입니다.")
     private String email;
-    @NotBlank(message = "인증번호는 필수 입력 항목입니다.")
-    private String certificationNumber;
-
 }
