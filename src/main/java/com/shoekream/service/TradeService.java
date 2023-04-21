@@ -4,13 +4,13 @@ import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.domain.address.Address;
 import com.shoekream.domain.point.Point;
-import com.shoekream.domain.point.PointDivision;
 import com.shoekream.domain.point.PointRepository;
 import com.shoekream.domain.product.Product;
 import com.shoekream.domain.product.ProductRepository;
 import com.shoekream.domain.product.dto.ProductInfoFromTrade;
+import com.shoekream.domain.trade.dto.ImmediateSaleRequest;
 import com.shoekream.domain.trade.Trade;
-import com.shoekream.domain.trade.BidCreateRequest;
+import com.shoekream.domain.trade.dto.BidCreateRequest;
 import com.shoekream.domain.trade.TradeRepository;
 import com.shoekream.domain.trade.dto.ImmediatePurchaseRequest;
 import com.shoekream.domain.trade.dto.TradeInfos;
@@ -126,7 +126,7 @@ public class TradeService {
         // 구매자 포인트 충분한지 확인
         buyer.checkPointForPurchase(trade.getPrice());
 
-        // 판매자 발송 대기 상태로 변경
+        // 즉시 구매 진행 (판매자 발송 대기 상태로 변경)
         trade.registerImmediatePurchase(buyer, buyerAddress);
 
         // 구매자 포인트 차감
@@ -135,5 +135,23 @@ public class TradeService {
         // 구매자 포인트 차감 이력 생성 후 저장
         Point point = Point.registerPointDeductionHistory(buyer, trade.getPrice());
         pointRepository.save(point);
+    }
+
+    public void immediateSale(String email, ImmediateSaleRequest requestDto) {
+
+        User seller = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.USER_NOT_FOUND));
+
+        Trade trade = tradeRepository.findById(requestDto.getTradeId())
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.TRADE_NOT_FOUND));
+
+        // (판매자) 요청 주소가 주소록에 있는지 확인
+        Address sellerAddress = seller.getAddressList().stream()
+                .filter(address -> address.getId().equals(requestDto.getAddressId()))
+                .findAny()
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.ADDRESS_NOT_FOUND));
+
+        // 즉시 판매 진행 (판매자 발송 대기 상태로 변경)
+        trade.registerImmediateSale(seller, sellerAddress);
     }
 }

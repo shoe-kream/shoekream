@@ -69,4 +69,10 @@ public class Trade extends BaseTimeEntity {
         this.buyerAddress = buyerAddress;
         this.status = TradeStatus.PRE_SELLER_SHIPMENT;
     }
+
+    public void registerImmediateSale(User seller, Address sellerAddress) {
+        this.seller = seller;
+        this.sellerAddress = sellerAddress;
+        this.status = TradeStatus.PRE_SELLER_SHIPMENT;
+    }
 }

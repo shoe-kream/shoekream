@@ -1,7 +1,9 @@
-package com.shoekream.domain.trade;
+package com.shoekream.domain.trade.dto;
 
 import com.shoekream.domain.address.Address;
 import com.shoekream.domain.product.Product;
+import com.shoekream.domain.trade.Trade;
+import com.shoekream.domain.trade.TradeStatus;
 import com.shoekream.domain.user.User;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
