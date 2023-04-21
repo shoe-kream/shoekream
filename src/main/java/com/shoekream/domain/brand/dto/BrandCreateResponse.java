@@ -9,4 +9,6 @@ import lombok.*;
 public class BrandCreateResponse {
 
     private String name;
+    private String originImagePath;
+    private String resizedImagePath;
 }

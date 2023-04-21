@@ -1,7 +1,9 @@
 package com.shoekream.service;
 
 
+import com.shoekream.common.annotation.SendMail;
 import com.shoekream.common.exception.ShoeKreamException;
+import com.shoekream.common.util.SecureCodeUtil;
 import com.shoekream.domain.cart.Cart;
 import com.shoekream.domain.cart.CartRepository;
 import com.shoekream.domain.user.Account;
@@ -13,6 +15,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.security.NoSuchAlgorithmException;
 
 import static com.shoekream.common.exception.ErrorCode.*;
 
@@ -132,12 +136,26 @@ public class UserService {
     }
 
     @Transactional
-    public void findPassword(UserFindPasswordRequest request, String tempPassword) {
+    @SendMail(classInfo = UserFindPasswordResponse.class)
+    public UserFindPasswordResponse findPassword(UserFindPasswordRequest request) throws NoSuchAlgorithmException {
         User foundUser = userRepository.findByEmailAndPhone(request.getEmail(), request.getPhone())
                 .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
 
+        String tempPassword = SecureCodeUtil.getTempPassword();
+
         foundUser.changePassword(encoder, tempPassword);
 
+        return foundUser.toUserFindPasswordResponse(tempPassword);
     }
 
+    @SendMail(classInfo = UserCertificateResponse.class)
+    public UserCertificateResponse checkUserExistForCertificate(UserCertificateRequest request) throws NoSuchAlgorithmException {
+
+        User foundUser = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ShoeKreamException(USER_NOT_FOUND));
+
+        String certificationNumber = SecureCodeUtil.getCertificationNumber();
+
+        return foundUser.toUserCertificateAccountResponse(certificationNumber);
+    }
 }

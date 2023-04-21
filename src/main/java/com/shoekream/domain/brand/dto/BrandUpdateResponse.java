@@ -3,9 +3,9 @@ package com.shoekream.domain.brand.dto;
 import lombok.*;
 
 @Getter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 public class BrandUpdateResponse {
 
     private String name;

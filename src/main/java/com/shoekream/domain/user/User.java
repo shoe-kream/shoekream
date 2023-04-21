@@ -1,6 +1,5 @@
 package com.shoekream.domain.user;
 
-import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.common.util.JwtUtil;
 import com.shoekream.domain.address.Address;
@@ -10,6 +9,7 @@ import com.shoekream.domain.cart.dto.WishProductResponse;
 import com.shoekream.domain.point.Point;
 import com.shoekream.domain.point.dto.PointResponse;
 import com.shoekream.domain.product.Product;
+import com.shoekream.domain.user.dto.*;
 import com.shoekream.domain.user.dto.UserChangeNicknameRequest;
 import com.shoekream.domain.user.dto.UserCreateResponse;
 import com.shoekream.domain.user.dto.UserInfoForTrade;
@@ -162,6 +162,28 @@ public class User extends UserBase {
         if (hasWishProduct) {
             throw new ShoeKreamException(DUPLICATED_WISH_PRODUCT);
         }
+    }
+
+    public UserFindPasswordResponse toUserFindPasswordResponse(String tempPassword) {
+        return UserFindPasswordResponse.builder()
+                .email(email)
+                .tempPassword(tempPassword)
+                .build();
+    }
+
+    public UserCertificateResponse toUserCertificateAccountResponse(String certificationNumber) {
+        return UserCertificateResponse.builder()
+                .email(this.email)
+                .certificationNumber(certificationNumber)
+                .build();
+    }
+
+
+    public UserVerificationResponse toUserVerificationAccountResponse(String certificationNumber) {
+        return UserVerificationResponse.builder()
+                .email(this.email)
+                .certificationNumber(certificationNumber)
+                .build();
     }
 
     public UserInfoForTrade toUserInfoForTrade() {

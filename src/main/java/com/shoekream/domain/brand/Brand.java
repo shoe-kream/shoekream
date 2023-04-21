@@ -35,6 +35,8 @@ public class Brand extends BaseTimeEntity {
     public BrandCreateResponse toBrandCreateResponse() {
         return BrandCreateResponse.builder()
                 .name(this.name)
+                .originImagePath(this.originImagePath)
+                .resizedImagePath(this.resizedImagePath)
                 .build();
     }
 
