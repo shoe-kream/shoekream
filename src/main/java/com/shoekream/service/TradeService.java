@@ -214,4 +214,23 @@ public class TradeService {
             return false;
         }
     }
+
+    public SendProductResponse updateSellerToCompanyTrackingNumber(String email, Long tradeId, SendingProductRequest requestDto) {
+
+        User seller = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.USER_NOT_FOUND));
+
+        Trade trade = tradeRepository.findById(tradeId)
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.TRADE_NOT_FOUND));
+
+        // 판매자인지 확인
+        if (!trade.getSeller().equals(seller.getEmail())) {
+            throw new ShoeKreamException(ErrorCode.USER_NOT_MATCH);
+        }
+
+        // 판매자 -> 회사 운송장번호 입력, status PRE_WAREHOUSING으로 변경
+        trade.updateSellerToCompanyTrackingNumber(requestDto.getTrackingNumber());
+
+        return trade.toSendProductResponse();
+    }
 }

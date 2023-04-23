@@ -56,7 +56,7 @@ public class TradeApiController {
 
     /**
      * 즉시 구매 생성
-     * @param requestDto        입찰 DTO
+     * @param requestDto        즉시 구매 DTO
      * @param authentication    유저 이메일
      * @param br                바인딩 체크
      */
@@ -70,7 +70,7 @@ public class TradeApiController {
 
     /**
      * 즉시 판매 생성
-     * @param requestDto        입찰 DTO
+     * @param requestDto        즉시 판매 DTO
      * @param authentication    유저 이메일
      * @param br                바인딩 체크
      */
@@ -84,7 +84,7 @@ public class TradeApiController {
 
     /**
      * 입찰 취소
-     * @param requestDto        입찰 DTO
+     * @param requestDto        입찰 취소 및 삭제 DTO
      * @param authentication    유저 이메일
      * @param br                바인딩 체크
      */
@@ -95,5 +95,18 @@ public class TradeApiController {
         return ResponseEntity.ok(Response.success(tradeService.deleteTrade(authentication.getName(), requestDto)));
     }
 
-
+    /**
+     * 입고 대기 요청
+     * @param tradeId           입찰 id
+     * @param requestDto        입고 대기 DTO
+     * @param authentication    유저 이메일
+     * @param br                바인딩 체크
+     */
+    @PatchMapping("/{tradeId}/sendingProduct")
+    public ResponseEntity<Response<SendProductResponse>> sendProductToCompany(@PathVariable Long tradeId,
+                                                                              @Validated @RequestBody SendingProductRequest requestDto,
+                                                                              Authentication authentication,
+                                                                              BindingResult br) {
+        return ResponseEntity.ok(Response.success(tradeService.updateSellerToCompanyTrackingNumber(authentication.getName(),tradeId, requestDto)));
+    }
 }

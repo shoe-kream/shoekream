@@ -3,6 +3,7 @@ package com.shoekream.domain.trade;
 import com.shoekream.domain.BaseTimeEntity;
 import com.shoekream.domain.address.Address;
 import com.shoekream.domain.product.Product;
+import com.shoekream.domain.trade.dto.SendProductResponse;
 import com.shoekream.domain.trade.dto.TradeBidInfos;
 import com.shoekream.domain.trade.dto.TradeDeleteResponse;
 import com.shoekream.domain.user.User;
@@ -94,6 +95,18 @@ public class Trade extends BaseTimeEntity {
                 .productName(this.product.getName())
                 .productSize(this.productSize)
                 .price(this.price)
+                .build();
+    }
+
+    public void updateSellerToCompanyTrackingNumber(String trackingNumber) {
+        this.companyToSellerTrackingNumber = trackingNumber;
+        this.status = TradeStatus.PRE_WAREHOUSING;
+    }
+
+    public SendProductResponse toSendProductResponse() {
+        return SendProductResponse.builder()
+                .sellerId(this.seller.getId())
+                .trackingNumber(this.companyToSellerTrackingNumber)
                 .build();
     }
 }
