@@ -12,8 +12,10 @@
 
 * [#2] 서버 사이드 캐싱 적용을 통해 응답 속도 향상과 DB 부하 줄이기 - Redis 활용
 
-  [**Cache개념과 Spring에서의 Cache**](https://percyfrank.github.io/springboot/Cache01/)  
+  [**Cache개념과 Spring에서의 Cache**](https://percyfrank.github.io/springboot/Cache01/)
+  
   [**Cache 기능을 Redis로 구현하기까지의 과정(1)**](https://percyfrank.github.io/springboot/Cache02/)  
+  
   [**Cache 기능을 Redis로 구현하기까지의 과정(2) - LocalDateTime 직렬화/역직렬화 방법**](https://percyfrank.github.io/springboot/Cache03/)  
 
 <br>
@@ -35,7 +37,8 @@
 
 * [#5] 메일 전송 기능에 비동기 처리 · AOP 적용을 통한 응답속도 개선과 코드 가독성 · 유연성 향상  - AsyncConfiguration · EventHandler · Custom Annotation 활용  
 
-  [**이메일 전송 기능을 비동기 처리해서 응답속도 개선하기**](https://inkyu-yoon.github.io/docs/Language/SpringBoot/EmailAsync)  
+  [**이메일 전송 기능을 비동기 처리해서 응답속도 개선하기**](https://inkyu-yoon.github.io/docs/Language/SpringBoot/EmailAsync) 
+  
   [**메일 전송 기능을 EventHandler와 AOP를 활용해 개선하기**](https://inkyu-yoon.github.io/docs/Language/SpringBoot/EmailAop)
 
 
