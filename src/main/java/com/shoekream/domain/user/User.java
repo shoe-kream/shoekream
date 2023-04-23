@@ -209,4 +209,8 @@ public class User extends UserBase {
             throw new ShoeKreamException(ErrorCode.NOT_ALLOWED_WITHDRAWAL_POINT);
         }
     }
+
+    public void returnPoint(Long price) {
+        this.point += price;
+    }
 }

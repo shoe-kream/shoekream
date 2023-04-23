@@ -1,11 +1,10 @@
 package com.shoekream.domain.trade;
 
-import com.shoekream.common.exception.ErrorCode;
-import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.domain.BaseTimeEntity;
 import com.shoekream.domain.address.Address;
 import com.shoekream.domain.product.Product;
 import com.shoekream.domain.trade.dto.TradeBidInfos;
+import com.shoekream.domain.trade.dto.TradeDeleteResponse;
 import com.shoekream.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -75,4 +74,27 @@ public class Trade extends BaseTimeEntity {
         this.sellerAddress = sellerAddress;
         this.status = TradeStatus.PRE_SELLER_SHIPMENT;
     }
+
+    public boolean hasBuyer() {
+        return this.buyer != null;
+    }
+
+    public boolean hasSeller() {
+        return this.seller != null;
+    }
+
+    public void undoTrade(Long price) {
+        buyer.returnPoint(price);
+
+    }
+
+    public TradeDeleteResponse toTradeDeleteResponse() {
+        return TradeDeleteResponse.builder()
+                .productId(this.product.getId())
+                .productName(this.product.getName())
+                .productSize(this.productSize)
+                .price(this.price)
+                .build();
+    }
 }
+

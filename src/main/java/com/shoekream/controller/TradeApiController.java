@@ -1,10 +1,7 @@
 package com.shoekream.controller;
 
 import com.shoekream.common.Response;
-import com.shoekream.domain.trade.dto.BidCreateRequest;
-import com.shoekream.domain.trade.dto.ImmediateSaleRequest;
-import com.shoekream.domain.trade.dto.ImmediatePurchaseRequest;
-import com.shoekream.domain.trade.dto.TradeInfos;
+import com.shoekream.domain.trade.dto.*;
 import com.shoekream.service.TradeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -84,5 +81,19 @@ public class TradeApiController {
         tradeService.immediateSale(authentication.getName(), requestDto);
         return ResponseEntity.ok(Response.success("ok"));
     }
+
+    /**
+     * 입찰 취소
+     * @param requestDto        입찰 DTO
+     * @param authentication    유저 이메일
+     * @param br                바인딩 체크
+     */
+    @DeleteMapping("")
+    public ResponseEntity<Response<TradeDeleteResponse>> deleteTrade(@Validated @RequestBody TradeDeleteRequest requestDto,
+                                                        Authentication authentication,
+                                                        BindingResult br) {
+        return ResponseEntity.ok(Response.success(tradeService.deleteTrade(authentication.getName(), requestDto)));
+    }
+
 
 }

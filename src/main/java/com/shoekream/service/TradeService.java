@@ -8,12 +8,10 @@ import com.shoekream.domain.point.PointRepository;
 import com.shoekream.domain.product.Product;
 import com.shoekream.domain.product.ProductRepository;
 import com.shoekream.domain.product.dto.ProductInfoFromTrade;
-import com.shoekream.domain.trade.dto.ImmediateSaleRequest;
+import com.shoekream.domain.trade.TradeStatus;
+import com.shoekream.domain.trade.dto.*;
 import com.shoekream.domain.trade.Trade;
-import com.shoekream.domain.trade.dto.BidCreateRequest;
 import com.shoekream.domain.trade.TradeRepository;
-import com.shoekream.domain.trade.dto.ImmediatePurchaseRequest;
-import com.shoekream.domain.trade.dto.TradeInfos;
 import com.shoekream.domain.user.User;
 import com.shoekream.domain.user.dto.UserInfoForTrade;
 import com.shoekream.domain.user.UserRepository;
@@ -184,5 +182,36 @@ public class TradeService {
 
         // 즉시 판매 진행 (판매자 발송 대기 상태로 변경)
         trade.registerImmediateSale(seller, sellerAddress);
+    }
+
+    public TradeDeleteResponse deleteTrade(String email, TradeDeleteRequest requestDto) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.USER_NOT_FOUND));
+
+        Trade trade = tradeRepository.findById(requestDto.getTradeId())
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.TRADE_NOT_FOUND));
+
+        // PRE_OFFER vs PRE_SELLER_SHIPMENT 상태에서만 취소 가능
+        if(isPermittedStatus(trade.getStatus())) {
+            // 판매 입찰만 등록된 경우(아직 즉시 구매자는 없는 경우)
+            if(trade.hasSeller() && !trade.hasBuyer()) {
+                tradeRepository.delete(trade);
+            } else { // 그 외엔 전부 구매자 있으므로 포인트 되돌리기
+                trade.undoTrade(trade.getPrice());
+                Point point = Point.returnPurchasePoint(trade.getBuyer(), trade.getPrice());
+                pointRepository.save(point);
+                tradeRepository.delete(trade);
+            }
+        }
+        return trade.toTradeDeleteResponse();
+    }
+
+    private boolean isPermittedStatus(TradeStatus status) {
+        if(status.equals(TradeStatus.PRE_OFFER) || status.equals(TradeStatus.PRE_SELLER_SHIPMENT)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
