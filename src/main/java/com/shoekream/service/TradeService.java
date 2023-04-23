@@ -19,8 +19,11 @@ import com.shoekream.domain.user.dto.UserInfoForTrade;
 import com.shoekream.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +51,7 @@ public class TradeService {
         return TradeInfos.toTradeInfos(productInfoFromTrade, userInfoForTrade);
     }
 
+    @CacheEvict(value = "products",key = "#requestDto.productId")
     public void createSaleBid(String email, BidCreateRequest requestDto) {
 
         User user = userRepository.findByEmail(email)
@@ -61,6 +65,18 @@ public class TradeService {
                 .findAny()
                 .orElseThrow(() -> new ShoeKreamException(ErrorCode.ADDRESS_NOT_FOUND));
 
+        // 판매 입찰은 구매 입찰의 최고가보다 낮은 가격 불가
+        Trade highestPurchaseBid = tradeRepository.findByProductAndProductSizeAndStatusPreOfferAndSellerIsNull(product, requestDto.getProductSize())
+                .stream()
+                .sorted(Comparator.comparing(Trade::getPrice).reversed())
+                .findFirst()
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.PURCHASE_BID_NOT_FOUND));
+
+        if (requestDto.getPrice() < highestPurchaseBid.getPrice()) {
+            throw new ShoeKreamException(ErrorCode.NOT_ALLOWED_SALE_BID_PRICE);
+        }
+
+
         // 입찰 등록하고자 하는 상품의 사이즈가 유효한지 확인
         checkExistProductSize(requestDto, product);
 
@@ -69,6 +85,8 @@ public class TradeService {
         tradeRepository.save(trade);
     }
 
+
+    @CacheEvict(value = "products",key = "#requestDto.productId")
     public void createPurchaseBid(String email, BidCreateRequest requestDto) {
 
         User user = userRepository.findByEmail(email)
@@ -82,6 +100,17 @@ public class TradeService {
                 .filter(address -> address.getId().equals(requestDto.getAddressId()))
                 .findAny()
                 .orElseThrow(() -> new ShoeKreamException(ErrorCode.ADDRESS_NOT_FOUND));
+
+        // 구매 입찰은 판매 입찰의 최저가보다 높은 가격 불가
+        Trade loewsSaleBid = tradeRepository.findByProductAndProductSizeAndStatusPreOfferAndBuyerIsNull(product, requestDto.getProductSize())
+                .stream()
+                .sorted(Comparator.comparing(Trade::getPrice))
+                .findFirst()
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.SALE_BID_NOT_FOUND));
+
+        if (requestDto.getPrice() > loewsSaleBid.getPrice()) {
+            throw new ShoeKreamException(ErrorCode.NOT_ALLOWED_PURCHASE_BID_PRICE);
+        }
 
         // 입찰 등록하고자 하는 상품의 사이즈가 유효한지 확인
         checkExistProductSize(requestDto, product);
@@ -109,6 +138,7 @@ public class TradeService {
         }
     }
 
+    @CacheEvict(value = "products",key = "#requestDto.productId")
     public void immediatePurchase(String email, ImmediatePurchaseRequest requestDto) {
 
         User buyer = userRepository.findByEmail(email)
@@ -137,6 +167,7 @@ public class TradeService {
         pointRepository.save(point);
     }
 
+    @CacheEvict(value = "products",key = "#requestDto.productId")
     public void immediateSale(String email, ImmediateSaleRequest requestDto) {
 
         User seller = userRepository.findByEmail(email)
