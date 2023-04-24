@@ -242,6 +242,10 @@ public class TradeService {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ShoeKreamException(ErrorCode.TRADE_NOT_FOUND));
 
+        if(!trade.getStatus().equals(TradeStatus.PRE_WAREHOUSING)) {
+            throw new ShoeKreamException(ErrorCode.IS_NOT_PRE_WAREHOUSING);
+        }
+
         trade.updateStatus(TradeStatus.PRE_INSPECTION);
 
     }
