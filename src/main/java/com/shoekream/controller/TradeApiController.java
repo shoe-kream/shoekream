@@ -111,6 +111,7 @@ public class TradeApiController {
     }
 
     /**
+     * 입고 확인 요청
      * @param tradeId           입찰 id
      * @param authentication    유저 이메일
      */
@@ -118,7 +119,19 @@ public class TradeApiController {
     public ResponseEntity<Response<String>> confirmWarehousing(@PathVariable Long tradeId,
                                                               Authentication authentication) {
         tradeService.confirmWarehousing(tradeId);
-        return ResponseEntity.ok(Response.success("Confirm Warehousing clear"));
+        return ResponseEntity.ok(Response.success("Warehousing confirm clear"));
+    }
+
+    /**
+     * 검수 확인 요청
+     * @param tradeId           입찰 id
+     * @param authentication    유저 이메일
+     */
+    @PatchMapping("/{tradeId}/inspection")
+    public ResponseEntity<Response<String>> confirmInspection(@PathVariable Long tradeId,
+                                                              Authentication authentication) {
+        tradeService.confirmInspection(tradeId);
+        return ResponseEntity.ok(Response.success("Inspection Successfully done"));
     }
 
 
