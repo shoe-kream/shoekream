@@ -3,9 +3,7 @@ package com.shoekream.domain.trade;
 import com.shoekream.domain.BaseTimeEntity;
 import com.shoekream.domain.address.Address;
 import com.shoekream.domain.product.Product;
-import com.shoekream.domain.trade.dto.SendProductResponse;
-import com.shoekream.domain.trade.dto.TradeBidInfos;
-import com.shoekream.domain.trade.dto.TradeDeleteResponse;
+import com.shoekream.domain.trade.dto.*;
 import com.shoekream.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -112,6 +110,18 @@ public class Trade extends BaseTimeEntity {
 
     public void updateStatus(TradeStatus status) {
         this.status = status;
+    }
+
+    public void cancelCausedByInspectionFailed(String cancelReason) {
+        this.cancelReason = cancelReason;
+        buyer.returnPoint(this.price);
+    }
+
+    public ReasonResponse toReasonResponse() {
+        return ReasonResponse.builder()
+                .tradeId(this.id)
+                .cancelReason(this.cancelReason)
+                .build();
     }
 }
 

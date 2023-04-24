@@ -28,35 +28,35 @@ public class TradeApiController {
 
     /**
      * 판매 입찰 생성
-     * @param requestDto        입찰 DTO
+     * @param requestDto        입찰 DTO - price, productSize, productId, addressId
      * @param authentication    유저 이메일
      * @param br                바인딩 체크
      */
     @PostMapping("/salesBid")
     public ResponseEntity<Response<String>> makeSaleBid(@Validated @RequestBody BidCreateRequest requestDto,
-                                                         Authentication authentication,
-                                                         BindingResult br) {
+                                                        Authentication authentication,
+                                                        BindingResult br) {
         tradeService.createSaleBid(authentication.getName(), requestDto);
         return ResponseEntity.ok(Response.success("ok"));
     }
 
     /**
      * 구매 입찰 생성
-     * @param requestDto        입찰 DTO
+     * @param requestDto        입찰 DTO - price, productSize, productId, addressId
      * @param authentication    유저 이메일
      * @param br                바인딩 체크
      */
     @PostMapping("/purchaseBid")
     public ResponseEntity<Response<String>> makePurchaseBid(@Validated @RequestBody BidCreateRequest requestDto,
-                                                           Authentication authentication,
-                                                           BindingResult br) {
+                                                            Authentication authentication,
+                                                            BindingResult br) {
         tradeService.createPurchaseBid(authentication.getName(), requestDto);
         return ResponseEntity.ok(Response.success("ok"));
     }
 
     /**
      * 즉시 구매 생성
-     * @param requestDto        즉시 구매 DTO
+     * @param requestDto        즉시 구매 DTO - tradeId, productId, addressId
      * @param authentication    유저 이메일
      * @param br                바인딩 체크
      */
@@ -70,7 +70,7 @@ public class TradeApiController {
 
     /**
      * 즉시 판매 생성
-     * @param requestDto        즉시 판매 DTO
+     * @param requestDto        즉시 판매 DTO - tradeId, productId, addressId
      * @param authentication    유저 이메일
      * @param br                바인딩 체크
      */
@@ -84,7 +84,7 @@ public class TradeApiController {
 
     /**
      * 입찰 취소
-     * @param requestDto        입찰 취소 및 삭제 DTO
+     * @param requestDto        입찰 취소 및 삭제 DTO - tradeId, price
      * @param authentication    유저 이메일
      * @param br                바인딩 체크
      */
@@ -98,7 +98,7 @@ public class TradeApiController {
     /**
      * 입고 대기 요청
      * @param tradeId           입찰 id
-     * @param requestDto        입고 대기 DTO
+     * @param requestDto        입고 대기 DTO - trackingNumber
      * @param authentication    유저 이메일
      * @param br                바인딩 체크
      */
@@ -132,6 +132,19 @@ public class TradeApiController {
                                                               Authentication authentication) {
         tradeService.confirmInspection(tradeId);
         return ResponseEntity.ok(Response.success("Inspection Successfully done"));
+    }
+
+    /**
+     * 검수 실패 요청
+     * @param tradeId           입찰 id
+     * @param requestDto        검수 실패 요청 DTO - cancelReason
+     * @param authentication    유저 이메일
+     */
+    @PatchMapping("/{tradeId}/inspectionFail")
+    public ResponseEntity<Response<ReasonResponse>> failInspection(@PathVariable Long tradeId,
+                                                     @RequestBody ReasonRequest requestDto,
+                                                     Authentication authentication) {
+        return ResponseEntity.ok(Response.success(tradeService.inspectionFailed(tradeId, requestDto)));
     }
 
 

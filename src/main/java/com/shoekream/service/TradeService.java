@@ -260,4 +260,22 @@ public class TradeService {
 
         trade.updateStatus(TradeStatus.PRE_SHIPMENT);
     }
+
+    public ReasonResponse inspectionFailed(Long tradeId, ReasonRequest requestDto) {
+
+        Trade trade = tradeRepository.findById(tradeId)
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.TRADE_NOT_FOUND));
+
+        if(!trade.getStatus().equals(TradeStatus.PRE_INSPECTION)) {
+            throw new ShoeKreamException(ErrorCode.IS_NOT_PRE_INSPECTION);
+        }
+
+        trade.cancelCausedByInspectionFailed(requestDto.getCancelReason());
+        trade.updateStatus(TradeStatus.CANCEL);
+
+        Point point = Point.returnPurchasePoint(trade.getBuyer(), trade.getPrice());
+        pointRepository.save(point);
+
+        return trade.toReasonResponse();
+    }
 }
