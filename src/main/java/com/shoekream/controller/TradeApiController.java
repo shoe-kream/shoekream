@@ -147,5 +147,19 @@ public class TradeApiController {
         return ResponseEntity.ok(Response.success(tradeService.inspectionFailed(tradeId, requestDto)));
     }
 
+    /**
+     * 반송 요청
+     * @param tradeId           입찰 id
+     * @param requestDto        반송 요청 DTO - trackingNumber
+     * @param authentication    유저 이메일
+     */
+    @PatchMapping("/{tradeId}/returnProduct")
+    public ResponseEntity<Response<ReturnResponse>> sendProductToSeller(@PathVariable Long tradeId,
+                                                                        @RequestBody SendingProductRequest requestDto,
+                                                                        Authentication authentication) {
+        return ResponseEntity.ok(Response.success(tradeService.updateCompanyToSellerTrackingNumber(tradeId, requestDto)));
+    }
+
+
 
 }

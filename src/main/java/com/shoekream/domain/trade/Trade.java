@@ -123,5 +123,16 @@ public class Trade extends BaseTimeEntity {
                 .cancelReason(this.cancelReason)
                 .build();
     }
+
+    public void updateCompanyToSellerTrackingNumber(String trackingNumber) {
+        this.companyToSellerTrackingNumber = trackingNumber;
+    }
+
+    public ReturnResponse toReturnResponse() {
+        return ReturnResponse.builder()
+                .sellerId(this.seller.getId())
+                .trackingNumber(this.companyToSellerTrackingNumber)
+                .build();
+    }
 }
 

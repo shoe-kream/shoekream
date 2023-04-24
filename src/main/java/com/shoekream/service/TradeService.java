@@ -278,4 +278,14 @@ public class TradeService {
 
         return trade.toReasonResponse();
     }
+
+    public ReturnResponse updateCompanyToSellerTrackingNumber(Long tradeId, SendingProductRequest requestDto) {
+
+        Trade trade = tradeRepository.findById(tradeId)
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.TRADE_NOT_FOUND));
+
+        trade.updateCompanyToSellerTrackingNumber(requestDto.getTrackingNumber());
+
+        return trade.toReturnResponse();
+    }
 }
