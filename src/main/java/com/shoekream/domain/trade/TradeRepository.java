@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface TradeRepository extends JpaRepository<Trade, Long> {
 
-    List<Trade> findByProductAndProductSizeAndStatusPreOfferAndSellerIsNull(Product product, Double productSize);
-    List<Trade> findByProductAndProductSizeAndStatusPreOfferAndBuyerIsNull(Product product, Double productSize);
+    List<Trade> findByProductAndProductSizeAndStatusAndSellerIsNull(Product product, Double productSize, TradeStatus status);
+    List<Trade> findByProductAndProductSizeAndStatusAndBuyerIsNull(Product product, Double productSize, TradeStatus status);
 }

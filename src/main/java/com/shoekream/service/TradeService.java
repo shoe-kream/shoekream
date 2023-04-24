@@ -64,16 +64,17 @@ public class TradeService {
                 .orElseThrow(() -> new ShoeKreamException(ErrorCode.ADDRESS_NOT_FOUND));
 
         // 판매 입찰은 구매 입찰의 최고가보다 낮은 가격 불가
-        Trade highestPurchaseBid = tradeRepository.findByProductAndProductSizeAndStatusPreOfferAndSellerIsNull(product, requestDto.getProductSize())
+        Trade highestPurchaseBid = tradeRepository.findByProductAndProductSizeAndStatusAndSellerIsNull(product, requestDto.getProductSize(), TradeStatus.PRE_OFFER)
                 .stream()
                 .sorted(Comparator.comparing(Trade::getPrice).reversed())
-                .findFirst()
-                .orElseThrow(() -> new ShoeKreamException(ErrorCode.PURCHASE_BID_NOT_FOUND));
+                .findAny()
+                .orElse(null);
 
-        if (requestDto.getPrice() < highestPurchaseBid.getPrice()) {
-            throw new ShoeKreamException(ErrorCode.NOT_ALLOWED_SALE_BID_PRICE);
+        if (highestPurchaseBid != null) {
+            if (requestDto.getPrice() < highestPurchaseBid.getPrice()) {
+                throw new ShoeKreamException(ErrorCode.NOT_ALLOWED_SALE_BID_PRICE);
+            }
         }
-
 
         // 입찰 등록하고자 하는 상품의 사이즈가 유효한지 확인
         checkExistProductSize(requestDto, product);
@@ -99,22 +100,24 @@ public class TradeService {
                 .findAny()
                 .orElseThrow(() -> new ShoeKreamException(ErrorCode.ADDRESS_NOT_FOUND));
 
-        // 구매 입찰은 판매 입찰의 최저가보다 높은 가격 불가
-        Trade loewsSaleBid = tradeRepository.findByProductAndProductSizeAndStatusPreOfferAndBuyerIsNull(product, requestDto.getProductSize())
-                .stream()
-                .sorted(Comparator.comparing(Trade::getPrice))
-                .findFirst()
-                .orElseThrow(() -> new ShoeKreamException(ErrorCode.SALE_BID_NOT_FOUND));
-
-        if (requestDto.getPrice() > loewsSaleBid.getPrice()) {
-            throw new ShoeKreamException(ErrorCode.NOT_ALLOWED_PURCHASE_BID_PRICE);
-        }
+        // 포인트 충분한지 확인
+        user.checkEnoughPoint(requestDto.getPrice());
 
         // 입찰 등록하고자 하는 상품의 사이즈가 유효한지 확인
         checkExistProductSize(requestDto, product);
 
-        // 포인트 충분한지 확인
-        user.checkEnoughPoint(requestDto.getPrice());
+        // 구매 입찰은 판매 입찰의 최저가보다 높은 가격 불가
+        Trade lowestSaleBid = tradeRepository.findByProductAndProductSizeAndStatusAndBuyerIsNull(product, requestDto.getProductSize(), TradeStatus.PRE_OFFER)
+                .stream()
+                .sorted(Comparator.comparing(Trade::getPrice))
+                .findFirst()
+                .orElse(null);
+
+        if (lowestSaleBid != null) {
+            if (requestDto.getPrice() > lowestSaleBid.getPrice()) {
+                throw new ShoeKreamException(ErrorCode.NOT_ALLOWED_PURCHASE_BID_PRICE);
+            }
+        }
 
         // 구매 입찰 생성
         Trade trade = requestDto.toEntityForBuyer(user, product, buyerAddress);
@@ -224,7 +227,7 @@ public class TradeService {
                 .orElseThrow(() -> new ShoeKreamException(ErrorCode.TRADE_NOT_FOUND));
 
         // 판매자인지 확인
-        if (!trade.getSeller().equals(seller.getEmail())) {
+        if (!trade.getSeller().getEmail().equals(seller.getEmail())) {
             throw new ShoeKreamException(ErrorCode.USER_NOT_MATCH);
         }
 
@@ -232,5 +235,14 @@ public class TradeService {
         trade.updateSellerToCompanyTrackingNumber(requestDto.getTrackingNumber());
 
         return trade.toSendProductResponse();
+    }
+
+    public void confirmWarehousing(Long tradeId) {
+
+        Trade trade = tradeRepository.findById(tradeId)
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.TRADE_NOT_FOUND));
+
+        trade.updateStatus(TradeStatus.PRE_INSPECTION);
+
     }
 }

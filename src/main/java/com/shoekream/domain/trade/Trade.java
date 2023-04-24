@@ -109,5 +109,9 @@ public class Trade extends BaseTimeEntity {
                 .trackingNumber(this.companyToSellerTrackingNumber)
                 .build();
     }
+
+    public void updateStatus(TradeStatus status) {
+        this.status = status;
+    }
 }
 

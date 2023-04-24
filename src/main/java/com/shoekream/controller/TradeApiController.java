@@ -109,4 +109,17 @@ public class TradeApiController {
                                                                               BindingResult br) {
         return ResponseEntity.ok(Response.success(tradeService.updateSellerToCompanyTrackingNumber(authentication.getName(),tradeId, requestDto)));
     }
+
+    /**
+     * @param tradeId           입찰 id
+     * @param authentication    유저 이메일
+     */
+    @PatchMapping("/{tradeId}/wareHousing")
+    public ResponseEntity<Response<String>> confirmWarehousing(@PathVariable Long tradeId,
+                                                              Authentication authentication) {
+        tradeService.confirmWarehousing(tradeId);
+        return ResponseEntity.ok(Response.success("Confirm Warehousing clear"));
+    }
+
+
 }
