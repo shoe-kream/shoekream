@@ -134,5 +134,17 @@ public class Trade extends BaseTimeEntity {
                 .trackingNumber(this.companyToSellerTrackingNumber)
                 .build();
     }
+
+    public void updateCompanyToBuyerTrackingNumber(String trackingNumber) {
+        this.companyToBuyerTrackingNumber = trackingNumber;
+        this.status = TradeStatus.SHIPPING;
+    }
+
+    public ReceiveResponse toReceiveResponse() {
+        return ReceiveResponse.builder()
+                .buyerId(this.buyer.getId())
+                .trackingNumber(this.companyToBuyerTrackingNumber)
+                .build();
+    }
 }
 

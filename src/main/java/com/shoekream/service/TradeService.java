@@ -288,4 +288,18 @@ public class TradeService {
 
         return trade.toReturnResponse();
     }
+
+    public ReceiveResponse updateCompanyToBuyerTrackingNumber(Long tradeId, SendingProductRequest requestDto) {
+
+        Trade trade = tradeRepository.findById(tradeId)
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.TRADE_NOT_FOUND));
+
+        if(!trade.getStatus().equals(TradeStatus.PRE_SHIPMENT)) {
+            throw new ShoeKreamException(ErrorCode.IS_NOT_PRE_SHIPMENT);
+        }
+
+        trade.updateCompanyToBuyerTrackingNumber(requestDto.getTrackingNumber());
+
+        return trade.toReceiveResponse();
+    }
 }

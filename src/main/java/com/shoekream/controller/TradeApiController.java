@@ -98,7 +98,7 @@ public class TradeApiController {
     /**
      * 입고 대기 요청
      * @param tradeId           입찰 id
-     * @param requestDto        입고 대기 DTO - trackingNumber
+     * @param requestDto        입고 대기 DTO - trackingNumber(판매자 -> 회사)
      * @param authentication    유저 이메일
      * @param br                바인딩 체크
      */
@@ -150,7 +150,7 @@ public class TradeApiController {
     /**
      * 반송 요청
      * @param tradeId           입찰 id
-     * @param requestDto        반송 요청 DTO - trackingNumber
+     * @param requestDto        반송 요청 DTO - trackingNumber(회사 -> 판매자)
      * @param authentication    유저 이메일
      */
     @PatchMapping("/{tradeId}/returnProduct")
@@ -160,6 +160,18 @@ public class TradeApiController {
         return ResponseEntity.ok(Response.success(tradeService.updateCompanyToSellerTrackingNumber(tradeId, requestDto)));
     }
 
+    /**
+     * 배송 요청
+     * @param tradeId           입찰 id
+     * @param requestDto        배송 요청 DTO - trackingNumber(회사 -> 구매자)
+     * @param authentication    유저 이메일
+     */
+    @PatchMapping("/{tradeId}/receivingProduct")
+    public ResponseEntity<Response<ReceiveResponse>> sendProductToBuyer(@PathVariable Long tradeId,
+                                                                        @RequestBody SendingProductRequest requestDto,
+                                                                        Authentication authentication) {
+        return ResponseEntity.ok(Response.success(tradeService.updateCompanyToBuyerTrackingNumber(tradeId, requestDto)));
+    }
 
 
 }

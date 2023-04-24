@@ -36,6 +36,7 @@ public enum ErrorCode {
     NOT_ALLOWED_PURCHASE_BID_PRICE(HttpStatus.BAD_REQUEST, "판매 입찰가는 구매 입찰의 최고가보다 낮을 수 없습니다."),
     IS_NOT_PRE_WAREHOUSING(HttpStatus.BAD_REQUEST, "입고 대기 상태의 상품이 아닙니다."),
     IS_NOT_PRE_INSPECTION(HttpStatus.BAD_REQUEST, "검수 대기 상태의 상품이 아닙니다."),
+    IS_NOT_PRE_SHIPMENT(HttpStatus.BAD_REQUEST, "구매자 발송 대기의 상품이 아닙니다."),
 
     WRONG_FILE_FORMAT(HttpStatus.BAD_REQUEST, "잘못된 형식의 파일입니다"),
     FILE_UPLOAD_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
