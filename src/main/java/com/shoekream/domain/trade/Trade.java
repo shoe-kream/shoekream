@@ -114,7 +114,7 @@ public class Trade extends BaseTimeEntity {
 
     public void cancelCausedByInspectionFailed(String cancelReason) {
         this.cancelReason = cancelReason;
-        buyer.returnPoint(this.price);
+        this.buyer.returnPoint(this.price);
     }
 
     public ReasonResponse toReasonResponse() {
@@ -145,6 +145,11 @@ public class Trade extends BaseTimeEntity {
                 .buyerId(this.buyer.getId())
                 .trackingNumber(this.companyToBuyerTrackingNumber)
                 .build();
+    }
+
+    public void finishTrade() {
+        this.status = TradeStatus.TRADE_COMPLETE;
+        this.seller.returnPoint(this.price);
     }
 }
 

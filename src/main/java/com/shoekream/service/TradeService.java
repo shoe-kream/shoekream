@@ -302,4 +302,20 @@ public class TradeService {
 
         return trade.toReceiveResponse();
     }
+
+    public void confirmPurchase(String buyerEmail, Long tradeId) {
+
+        Trade trade = tradeRepository.findById(tradeId)
+                .orElseThrow(() -> new ShoeKreamException(ErrorCode.TRADE_NOT_FOUND));
+
+        if(!trade.getBuyer().getEmail().equals(buyerEmail)) {
+            throw new ShoeKreamException(ErrorCode.USER_NOT_MATCH);
+        }
+
+        trade.finishTrade();
+
+        Point point = Point.receivePurchasePoint(trade.getSeller(), trade.getPrice());
+        pointRepository.save(point);
+
+    }
 }

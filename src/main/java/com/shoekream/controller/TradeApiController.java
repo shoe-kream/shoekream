@@ -29,7 +29,7 @@ public class TradeApiController {
     /**
      * 판매 입찰 생성
      * @param requestDto        입찰 DTO - price, productSize, productId, addressId
-     * @param authentication    유저 이메일
+     * @param authentication    판매 입찰자 이메일
      * @param br                바인딩 체크
      */
     @PostMapping("/salesBid")
@@ -43,7 +43,7 @@ public class TradeApiController {
     /**
      * 구매 입찰 생성
      * @param requestDto        입찰 DTO - price, productSize, productId, addressId
-     * @param authentication    유저 이메일
+     * @param authentication    구매 입찰자 이메일
      * @param br                바인딩 체크
      */
     @PostMapping("/purchaseBid")
@@ -57,7 +57,7 @@ public class TradeApiController {
     /**
      * 즉시 구매 생성
      * @param requestDto        즉시 구매 DTO - tradeId, productId, addressId
-     * @param authentication    유저 이메일
+     * @param authentication    즉시 구매자 이메일
      * @param br                바인딩 체크
      */
     @PostMapping("/purchase")
@@ -71,7 +71,7 @@ public class TradeApiController {
     /**
      * 즉시 판매 생성
      * @param requestDto        즉시 판매 DTO - tradeId, productId, addressId
-     * @param authentication    유저 이메일
+     * @param authentication    즉시 판매자 이메일
      * @param br                바인딩 체크
      */
     @PostMapping("/sale")
@@ -85,7 +85,7 @@ public class TradeApiController {
     /**
      * 입찰 취소
      * @param requestDto        입찰 취소 및 삭제 DTO - tradeId, price
-     * @param authentication    유저 이메일
+     * @param authentication    입찰자(구매/판매) 이메일
      * @param br                바인딩 체크
      */
     @DeleteMapping("")
@@ -99,7 +99,7 @@ public class TradeApiController {
      * 입고 대기 요청
      * @param tradeId           입찰 id
      * @param requestDto        입고 대기 DTO - trackingNumber(판매자 -> 회사)
-     * @param authentication    유저 이메일
+     * @param authentication    구매자 이메일
      * @param br                바인딩 체크
      */
     @PatchMapping("/{tradeId}/sendingProduct")
@@ -113,7 +113,7 @@ public class TradeApiController {
     /**
      * 입고 확인 요청
      * @param tradeId           입찰 id
-     * @param authentication    유저 이메일
+     * @param authentication    관리자 이메일
      */
     @PatchMapping("/{tradeId}/wareHousing")
     public ResponseEntity<Response<String>> confirmWarehousing(@PathVariable Long tradeId,
@@ -125,7 +125,7 @@ public class TradeApiController {
     /**
      * 검수 확인 요청
      * @param tradeId           입찰 id
-     * @param authentication    유저 이메일
+     * @param authentication    관리자 이메일
      */
     @PatchMapping("/{tradeId}/inspection")
     public ResponseEntity<Response<String>> confirmInspection(@PathVariable Long tradeId,
@@ -138,7 +138,7 @@ public class TradeApiController {
      * 검수 실패 요청
      * @param tradeId           입찰 id
      * @param requestDto        검수 실패 요청 DTO - cancelReason
-     * @param authentication    유저 이메일
+     * @param authentication    관리자 이메일
      */
     @PatchMapping("/{tradeId}/inspectionFail")
     public ResponseEntity<Response<ReasonResponse>> failInspection(@PathVariable Long tradeId,
@@ -151,7 +151,7 @@ public class TradeApiController {
      * 반송 요청
      * @param tradeId           입찰 id
      * @param requestDto        반송 요청 DTO - trackingNumber(회사 -> 판매자)
-     * @param authentication    유저 이메일
+     * @param authentication    관리자 이메일
      */
     @PatchMapping("/{tradeId}/returnProduct")
     public ResponseEntity<Response<ReturnResponse>> sendProductToSeller(@PathVariable Long tradeId,
@@ -164,13 +164,25 @@ public class TradeApiController {
      * 배송 요청
      * @param tradeId           입찰 id
      * @param requestDto        배송 요청 DTO - trackingNumber(회사 -> 구매자)
-     * @param authentication    유저 이메일
+     * @param authentication    관리자 이메일
      */
     @PatchMapping("/{tradeId}/receivingProduct")
     public ResponseEntity<Response<ReceiveResponse>> sendProductToBuyer(@PathVariable Long tradeId,
                                                                         @RequestBody SendingProductRequest requestDto,
                                                                         Authentication authentication) {
         return ResponseEntity.ok(Response.success(tradeService.updateCompanyToBuyerTrackingNumber(tradeId, requestDto)));
+    }
+
+    /**
+     * 구매 최종 확인
+     * @param tradeId           입찰 id
+     * @param authentication    구매자 이메일
+     */
+    @PatchMapping("/{tradeId}/confirmPurchase")
+    public ResponseEntity<Response<String>> confirmPurchase(@PathVariable Long tradeId,
+                                                            Authentication authentication) {
+        tradeService.confirmPurchase(authentication.getName(), tradeId);
+        return ResponseEntity.ok(Response.success("Trade successfully done"));
     }
 
 

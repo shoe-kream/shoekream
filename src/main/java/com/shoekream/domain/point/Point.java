@@ -34,6 +34,14 @@ public class Point extends BaseTimeEntity {
             .build();
     }
 
+    public static Point receivePurchasePoint(User seller, Long price) {
+        return Point.builder()
+                .user(seller)
+                .division(PointDivision.POINT_REVENUE)
+                .amount(price)
+                .build();
+    }
+
     public PointHistoryResponse toPointHistoryResponse() {
         return PointHistoryResponse.builder()
                 .time(this.getCreatedDate())
