@@ -53,7 +53,8 @@ public class User extends UserBase {
     @JoinColumn(name = "CART_ID")
     private Cart cart;
 
-    @OneToMany(mappedBy = "user")
+    //    @JsonManagedReference
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Address> addressList = new ArrayList<>();
 
     @Builder

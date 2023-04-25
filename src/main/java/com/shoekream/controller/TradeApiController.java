@@ -19,12 +19,12 @@ public class TradeApiController {
 
     private final TradeService tradeService;
 
-    @GetMapping("/{productId}")
-    public ResponseEntity<Response<TradeInfos>> getTradeForBid(@PathVariable Long productId,
-                                                               @RequestParam Double size,
-                                                               Authentication authentication) {
-        return ResponseEntity.ok(Response.success(tradeService.getTradeInfosForBid(productId, authentication.getName(), size)));
-    }
+//    @GetMapping("/{productId}")
+//    public ResponseEntity<Response<TradeInfos>> getTradeForBid(@PathVariable Long productId,
+//                                                               @RequestParam Double size,
+//                                                               Authentication authentication) {
+//        return ResponseEntity.ok(Response.success(tradeService.getTradeInfosForBid(productId, authentication.getName(), size)));
+//    }
 
     /**
      * 판매 입찰 생성

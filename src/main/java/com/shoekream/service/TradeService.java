@@ -32,22 +32,21 @@ public class TradeService {
     private final TradeRepository tradeRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
-
     private final PointRepository pointRepository;
 
-    public TradeInfos getTradeInfosForBid(Long productId, String email, Double size) {
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ShoeKreamException(ErrorCode.USER_NOT_FOUND));
-
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ShoeKreamException(ErrorCode.PRODUCT_NOT_FOUND));
-
-        ProductInfoFromTrade productInfoFromTrade = product.getProductInfoFromTrade(size);
-        UserInfoForTrade userInfoForTrade = user.toUserInfoForTrade();
-
-        return TradeInfos.toTradeInfos(productInfoFromTrade, userInfoForTrade);
-    }
+//    public TradeInfos getTradeInfosForBid(Long productId, String email, Double size) {
+//
+//        User user = userRepository.findByEmail(email)
+//                .orElseThrow(() -> new ShoeKreamException(ErrorCode.USER_NOT_FOUND));
+//
+//        Product product = productRepository.findById(productId)
+//                .orElseThrow(() -> new ShoeKreamException(ErrorCode.PRODUCT_NOT_FOUND));
+//
+//        ProductInfoFromTrade productInfoFromTrade = product.getProductInfoFromTrade(size);
+//        UserInfoForTrade userInfoForTrade = user.toUserInfoForTrade();
+//
+//        return TradeInfos.toTradeInfos(productInfoFromTrade, userInfoForTrade);
+//    }
 
     @CacheEvict(value = "products",key = "#requestDto.productId")
     public void createSaleBid(String email, BidCreateRequest requestDto) {
