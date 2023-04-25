@@ -4,9 +4,12 @@ import com.shoekream.domain.brand.dto.BrandInfo;
 import com.shoekream.domain.product.common.Currency;
 import com.shoekream.domain.product.common.SizeClassification;
 import com.shoekream.domain.product.common.SizeUnit;
+import com.shoekream.domain.trade.dto.TradeBidInfos;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -29,4 +32,6 @@ public class ProductInfo {
     private BrandInfo brandInfo;
     private String originImagePath;
     private String resizedImagePath;
+    private List<TradeBidInfos> salesBids = new ArrayList<>();
+    private List<TradeBidInfos> purchaseBids = new ArrayList<>();
 }

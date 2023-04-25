@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -116,7 +117,27 @@ public class Product extends BaseTimeEntity {
                 .brandInfo(this.brand.toBrandInfo())
                 .originImagePath(this.originImagePath)
                 .resizedImagePath(this.resizedImagePath)
+                .salesBids(getSalesBids())
+                .purchaseBids(getPurchaseBids())
                 .build();
+    }
+
+    private List<TradeBidInfos> getSalesBids() {
+        return trades.stream()
+                .filter(trade -> trade.getStatus().equals(TradeStatus.PRE_OFFER))
+                .filter(trade -> trade.getBuyer() == null)
+                .sorted(Comparator.comparing(Trade::getPrice).reversed())
+                .map(Trade::toTradeBidInfos)
+                .toList();
+    }
+
+    private List<TradeBidInfos> getPurchaseBids() {
+        return trades.stream()
+                .filter(trade -> trade.getStatus().equals(TradeStatus.PRE_OFFER))
+                .filter(trade -> trade.getSeller() == null)
+                .sorted(Comparator.comparing(Trade::getPrice))
+                .map(Trade::toTradeBidInfos)
+                .toList();
     }
 
     public ProductDeleteResponse toProductDeleteResponse() {
