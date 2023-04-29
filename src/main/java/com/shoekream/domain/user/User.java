@@ -1,7 +1,9 @@
 package com.shoekream.domain.user;
 
+import com.shoekream.common.exception.ErrorCode;
 import com.shoekream.common.exception.ShoeKreamException;
 import com.shoekream.common.util.JwtUtil;
+import com.shoekream.domain.address.Address;
 import com.shoekream.domain.cart.Cart;
 import com.shoekream.domain.cart.CartProduct;
 import com.shoekream.domain.cart.dto.WishProductResponse;
@@ -9,6 +11,10 @@ import com.shoekream.domain.point.Point;
 import com.shoekream.domain.point.dto.PointResponse;
 import com.shoekream.domain.product.Product;
 import com.shoekream.domain.user.dto.*;
+import com.shoekream.domain.user.dto.UserChangeNicknameRequest;
+import com.shoekream.domain.user.dto.UserCreateResponse;
+import com.shoekream.domain.user.dto.UserInfoForTrade;
+import com.shoekream.domain.user.dto.UserResponse;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -46,6 +52,10 @@ public class User extends UserBase {
     @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "CART_ID")
     private Cart cart;
+
+    //    @JsonManagedReference
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Address> addressList = new ArrayList<>();
 
     @Builder
     public User(Long id, String email, String password, UserRole userRole, String nickname, String phone, Long point, LocalDateTime nicknameModifiedDate, Cart cart) {
@@ -176,5 +186,32 @@ public class User extends UserBase {
                 .email(this.email)
                 .certificationNumber(certificationNumber)
                 .build();
+    }
+
+    public UserInfoForTrade toUserInfoForTrade() {
+        return UserInfoForTrade.builder()
+                .addressList(this.addressList)
+                .account(this.account)
+                .build();
+    }
+
+    public void checkEnoughPoint(Long bidPrice) {
+        if(bidPrice > this.point) {
+            throw new ShoeKreamException(ErrorCode.NOT_ALLOWED_WITHDRAWAL_POINT);
+        }
+    }
+
+    public void deductPoints(Long bidPrice) {
+        this.point -= bidPrice;
+    }
+
+    public void checkPointForPurchase(Long bidPrice) {
+        if(bidPrice > this.point) {
+            throw new ShoeKreamException(ErrorCode.NOT_ALLOWED_WITHDRAWAL_POINT);
+        }
+    }
+
+    public void returnPoint(Long price) {
+        this.point += price;
     }
 }

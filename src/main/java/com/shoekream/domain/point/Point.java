@@ -26,10 +26,34 @@ public class Point extends BaseTimeEntity {
 
     private Long amount;
 
+    public static Point returnPurchasePoint(User buyer, Long price) {
+        return Point.builder()
+            .user(buyer)
+            .division(PointDivision.PURCHASE_RETURN)
+            .amount(price)
+            .build();
+    }
+
+    public static Point receivePurchasePoint(User seller, Long price) {
+        return Point.builder()
+                .user(seller)
+                .division(PointDivision.POINT_REVENUE)
+                .amount(price)
+                .build();
+    }
+
     public PointHistoryResponse toPointHistoryResponse() {
         return PointHistoryResponse.builder()
                 .time(this.getCreatedDate())
                 .amount(this.amount)
+                .build();
+    }
+
+    public static Point registerPointDeductionHistory(User user, Long price) {
+        return Point.builder()
+                .user(user)
+                .amount(price)
+                .division(PointDivision.PURCHASE_DEDUCTION)
                 .build();
     }
 }

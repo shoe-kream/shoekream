@@ -24,6 +24,7 @@ public class Address extends BaseTimeEntity {
     private String detailedAddress;
     private String postalCode;
 
+//    @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")
     private User user;
