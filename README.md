@@ -41,4 +41,13 @@
   
   [**메일 전송 기능을 EventHandler와 AOP를 활용해 개선하기**](https://inkyu-yoon.github.io/docs/Language/SpringBoot/EmailAop)
 
+<br>
+
+* [#6] MySQL Replication 설정 · Write와 Read 작업 분기 처리를 통한 DB 부하 분산 및 고가용성향상
+
+  [**MySQL Replication Master-Slave 이중화 시스템 구현하기**](https://inkyu-yoon.github.io/docs/Learned/DataBase/mysql-replication)
+
+  [**Spring Boot MySQL Master-Slave 기능 구현하기**](https://inkyu-yoon.github.io/docs/Language/SpringBoot/datasource-replication)
+
+
 
