@@ -46,6 +46,9 @@ dependencies {
 	// 메일 발송
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+	//Swagger
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
+
 	// jar 파일 1개 생성
 	jar {
 		enabled = false
