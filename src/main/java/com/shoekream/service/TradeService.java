@@ -9,6 +9,7 @@ import com.shoekream.domain.product.Product;
 import com.shoekream.domain.product.ProductRepository;
 import com.shoekream.domain.product.dto.ProductInfoFromTrade;
 import com.shoekream.domain.trade.TradeStatus;
+import com.shoekream.domain.trade.TradeValidator;
 import com.shoekream.domain.trade.dto.*;
 import com.shoekream.domain.trade.Trade;
 import com.shoekream.domain.trade.TradeRepository;
@@ -33,6 +34,7 @@ public class TradeService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final PointRepository pointRepository;
+    private final TradeValidator validator;
 
 //    public TradeInfos getTradeInfosForBid(Long productId, String email, Double size) {
 //
@@ -139,13 +141,21 @@ public class TradeService {
     }
 
     @CacheEvict(value = "products",key = "#requestDto.productId")
-    public void immediatePurchase(String email, ImmediatePurchaseRequest requestDto) {
+    public ImmediatePurchaseResponse immediatePurchase(String email, ImmediatePurchaseRequest requestDto) {
 
         User buyer = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ShoeKreamException(ErrorCode.USER_NOT_FOUND));
 
-        Trade trade = tradeRepository.findById(requestDto.getTradeId())
+        Trade trade = tradeRepository.findPessimisticLockById(requestDto.getTradeId())
                 .orElseThrow(() -> new ShoeKreamException(ErrorCode.TRADE_NOT_FOUND));
+
+        ImmediatePurchaseResponse response = validator.purchaseValidate(trade);
+        response.setTradeId(buyer.getId(), trade.getId());
+
+        if(!response.isEligible()) {
+            log.info(response.getRejectReason());
+            return response;
+        }
 
         // 요청 주소가 주소록에 있는지 확인
         Address buyerAddress = buyer.getAddressList().stream()
@@ -156,15 +166,17 @@ public class TradeService {
         // 구매자 포인트 충분한지 확인
         buyer.checkPointForPurchase(trade.getPrice());
 
-        // 즉시 구매 진행 (판매자 발송 대기 상태로 변경)
-        trade.registerImmediatePurchase(buyer, buyerAddress);
-
         // 구매자 포인트 차감
         buyer.deductPoints(trade.getPrice());
+
+        // 즉시 구매 진행 (판매자 발송 대기 상태로 변경)
+        trade.registerImmediatePurchase(buyer, buyerAddress);
 
         // 구매자 포인트 차감 이력 생성 후 저장
         Point point = Point.registerPointDeductionHistory(buyer, trade.getPrice());
         pointRepository.save(point);
+
+        return response;
     }
 
     @CacheEvict(value = "products",key = "#requestDto.productId")
