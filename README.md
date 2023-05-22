@@ -1,5 +1,13 @@
 # 👟 한정판 신발 거래 서비스 Shoe Kream
 
+한정판 신발 거래 플랫폼 Shoe Kream  
+
+[📖 Web API 문서](http://49.50.162.219:8081/swagger-ui/index.html)
+
+## ERD
+
+![image](https://raw.githubusercontent.com/buinq/imageServer/main/img/230783671-cd54f6ee-782c-4b27-871d-cb24b7ed7a27.png)
+
 ## 기술적 issue 해결 과정
 
 <br>
@@ -43,11 +51,14 @@
 
 <br>
 
-* [#6] MySQL Replication 설정 · Write와 Read 작업 분기 처리를 통한 DB 부하 분산 및 고가용성향상
+* [#6] MySQL Replication 설정 · Write와 Read 작업 분기 처리를 통한 DB 부하 분산 및 고가용성 향상
 
   [**MySQL Replication Master-Slave 이중화 시스템 구현하기**](https://inkyu-yoon.github.io/docs/Learned/DataBase/mysql-replication)
 
   [**Spring Boot MySQL Master-Slave 기능 구현하기**](https://inkyu-yoon.github.io/docs/Language/SpringBoot/datasource-replication)
 
+<br>
 
+* [#7] 동시성 문제 해결 - 낙관적 락과 비관적 락  
 
+  [**동시성 문제 해결 - DB Lock 적용**](https://percyfrank.github.io/springboot/concurrency01/)
