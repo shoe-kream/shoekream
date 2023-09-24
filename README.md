@@ -2,6 +2,9 @@
 
 한정판 신발 거래 플랫폼 Shoe Kream  
 
+[📖 정리 링크](https://www.notion.so/shoekream-2c61bb48605c45959695a142bb6922c7)
+
+
 [📖 Web API 문서](http://49.50.162.219:8081/swagger-ui/index.html)
 
 ## ERD
